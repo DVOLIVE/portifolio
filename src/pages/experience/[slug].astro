@@ -1,0 +1,328 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Avatar from '../../components/Avatar.astro';
+import Badge from '../../components/Badge.astro';
+import Button from '../../components/Button.astro';
+import Icon from '../../components/Icon.astro';
+import ExperienceCover from '../../components/ExperienceCover.astro';
+import { experiences } from '../../content/experience';
+import { site } from '../../content/site';
+import type { Experience } from '../../content/types';
+import { experiencePath, getCategory, getProject, hasPage, projectPath, statusLabel, url } from '../../lib/content';
+
+/* One reusable template for every professional experience. */
+export const getStaticPaths = (() =>
+  experiences.map((experience) => ({ params: { slug: experience.slug }, props: { experience } }))) satisfies GetStaticPaths;
+
+interface Props {
+  experience: Experience;
+}
+
+const { experience } = Astro.props;
+const index = experiences.findIndex((e) => e.slug === experience.slug);
+const next = experiences[(index + 1) % experiences.length];
+const relatedProjects = experience.relatedProjects.map(getProject).filter((p) => p !== undefined);
+const relatedCategories = experience.relatedCategories.map(getCategory);
+---
+
+<BaseLayout title={`${experience.company} — ${experience.roles[0].title}`} description={experience.summary} section="experience" type="article">
+  <PageHeader
+    back={{ label: 'All experience', href: '/#experience' }}
+    eyebrow={`Experience / ${experience.category}`}
+    title={experience.headline}
+    lead={experience.summary}
+  >
+    <div class="identity">
+      <Avatar initials={experience.initials} label={experience.company} size="lg" />
+      <div class="identity__text">
+        <p class="identity__company">{experience.company} <span>· {experience.sector}</span></p>
+        <ul class="identity__roles" role="list">
+          {experience.roles.map((role) => <li><strong>{role.title}</strong> <span class="mono-label">{role.period}</span></li>)}
+        </ul>
+      </div>
+    </div>
+  </PageHeader>
+
+  <div class="container experience">
+    <div class="experience__cover" aria-hidden="true">
+      <ExperienceCover motif={experience.cover} fit="contain" />
+    </div>
+
+    <section class="xp-section" aria-labelledby="context-title">
+      <h2 class="xp-section__title" id="context-title">Business context</h2>
+      <div class="xp-prose">{experience.context.map((p) => <p>{p}</p>)}</div>
+    </section>
+
+    <section class="xp-section" aria-labelledby="impact-title">
+      <h2 class="xp-section__title" id="impact-title">Verified impact</h2>
+      <dl class="impact">
+        {
+          experience.impact.map((item) => (
+            <div class="impact__item">
+              <dt>{item.label}</dt>
+              <dd>{item.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="xp-footnote">As stated in my CV. Figures are not independently audited.</p>
+    </section>
+
+    <section class="xp-section" aria-labelledby="responsibilities-title">
+      <h2 class="xp-section__title" id="responsibilities-title">Key responsibilities</h2>
+      <ul class="xp-list">{experience.responsibilities.map((item) => <li>{item}</li>)}</ul>
+    </section>
+
+    <section class="xp-section" aria-labelledby="problems-title">
+      <h2 class="xp-section__title" id="problems-title">Problems addressed</h2>
+      <ul class="xp-list">{experience.problems.map((item) => <li>{item}</li>)}</ul>
+    </section>
+
+    <section class="xp-section" aria-labelledby="initiatives-title">
+      <h2 class="xp-section__title" id="initiatives-title">Projects and initiatives</h2>
+      <ul class="initiatives" role="list">
+        {
+          experience.initiatives.map((item, i) => (
+            <li class="initiative">
+              <span class="initiative__index mono-label" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="initiative__title">{item.title}</h3>
+              <p class="initiative__text">{item.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="xp-section xp-section--split" aria-labelledby="practices-title">
+      <div>
+        <h2 class="xp-section__title" id="practices-title">Technology and analytical practices</h2>
+        <ul class="tags" role="list">{experience.practices.map((item) => <li><Badge tone="quiet">{item}</Badge></li>)}</ul>
+      </div>
+      <div>
+        <h2 class="xp-section__title" id="skills-title">Skills developed</h2>
+        <ul class="tags" role="list" aria-labelledby="skills-title">{experience.skills.map((item) => <li><Badge>{item}</Badge></li>)}</ul>
+      </div>
+    </section>
+
+    <section class="xp-section" aria-labelledby="related-title">
+      <h2 class="xp-section__title" id="related-title">Related work</h2>
+      <ul class="related" role="list">
+        {
+          relatedProjects.map((project) => (
+            <li>
+              {hasPage(project) ? (
+                <a class="related__item" href={url(projectPath(project))}>
+                  <span>{project.title}</span>
+                  <Badge status={project.status} />
+                </a>
+              ) : (
+                <span class="related__item related__item--upcoming">
+                  <span>{project.title}</span>
+                  <Badge status={project.status} />
+                </span>
+              )}
+            </li>
+          ))
+        }
+        {
+          relatedCategories.map((category) => (
+            <li>
+              <a class="related__item" href={url(`/${category.slug}/`)}>
+                <span>{category.title}</span>
+                <span class="mono-label related__kind">Area of expertise <Icon name="arrow-right" /></span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      {relatedProjects.some((p) => !hasPage(p)) && <p class="xp-footnote">Case studies marked “{statusLabel['coming-soon']}” will use anonymised or synthetic data.</p>}
+    </section>
+
+    <section class="cv-cta" aria-labelledby="cv-title">
+      <h2 class="cv-cta__title" id="cv-title">The full story is in my CV.</h2>
+      <div class="cv-cta__actions">
+        <Button href={site.cv.href} icon="download" download={site.cv.fileName}>Download My CV</Button>
+        <Button href={experiencePath(next.slug)} variant="secondary" icon="arrow-right">Next: {next.company}</Button>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .identity {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-s);
+    margin-block-start: var(--space-stack-s);
+  }
+  .identity__text { display: grid; gap: var(--space-3xs); }
+  .identity__company {
+    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+  }
+  .identity__company span { color: var(--color-text-muted); font-weight: var(--font-weight-regular); }
+  .identity__roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs) var(--space-inline-m);
+    list-style: none;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+  }
+  .identity__roles strong { color: var(--color-text); font-weight: var(--font-weight-medium); }
+
+  .experience {
+    display: grid;
+    gap: var(--space-2xl-3xl);
+    padding-block: var(--space-l-xl) var(--space-section);
+  }
+  .experience__cover {
+    aspect-ratio: var(--ratio-ultrawide);
+    overflow: hidden;
+    background: var(--color-canvas-deep);
+    border: var(--border-hairline);
+    border-radius: var(--radius-panel);
+  }
+
+  .xp-section {
+    display: grid;
+    gap: var(--space-stack-m);
+    padding-block-start: var(--space-stack-m);
+    border-block-start: var(--border-hairline);
+  }
+  .xp-section__title { font-size: var(--font-size-h3); }
+  .xp-prose {
+    display: grid;
+    gap: var(--space-stack-s);
+    max-width: var(--layout-measure);
+    color: var(--color-text-muted);
+  }
+  .xp-list {
+    display: grid;
+    gap: var(--space-stack-s);
+    max-width: var(--layout-measure);
+    padding-inline-start: var(--space-m);
+    color: var(--color-text-muted);
+  }
+  .xp-list li::marker { color: var(--color-accent); }
+  .xp-footnote {
+    color: var(--color-text-subtle);
+    font-size: var(--font-size-small);
+  }
+
+  .impact {
+    display: grid;
+    gap: var(--space-grid);
+    margin: 0;
+  }
+  .impact__item {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: var(--space-2xs);
+    padding: var(--space-m);
+    border: var(--border-hairline);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+  .impact__item dd {
+    margin: 0;
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-h2);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-heading-role);
+    font-variant-numeric: tabular-nums;
+  }
+  .impact__item dt {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+  }
+
+  .initiatives {
+    display: grid;
+    gap: var(--space-grid);
+    list-style: none;
+  }
+  .initiative {
+    display: grid;
+    gap: var(--space-2xs);
+    align-content: start;
+    padding: var(--space-m);
+    border: var(--border-hairline);
+    border-radius: var(--radius-card);
+    background: var(--color-canvas-deep);
+  }
+  .initiative__index { color: var(--color-accent); }
+  .initiative__title { font-size: var(--font-size-h4); }
+  .initiative__text { color: var(--color-text-muted); }
+
+  .xp-section--split { gap: var(--space-stack-l); }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin-block-start: var(--space-stack-m);
+    list-style: none;
+  }
+
+  .related {
+    display: grid;
+    list-style: none;
+    border-block-start: var(--border-hairline);
+  }
+  .related__item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2xs) var(--space-inline-s);
+    min-height: var(--a11y-min-target);
+    padding-block: var(--space-xs);
+    border-block-end: var(--border-hairline);
+    color: var(--color-text);
+    text-decoration: none;
+  }
+  a.related__item:hover { color: var(--color-accent-hover); }
+  .related__item--upcoming { color: var(--state-disabled-text); }
+  .related__kind {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    color: var(--color-text-subtle);
+  }
+
+  .cv-cta {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-stack-m);
+    padding: var(--space-l-xl);
+    border: var(--border-hairline);
+    border-radius: var(--radius-panel);
+    background: var(--surface-halo), var(--color-surface);
+  }
+  .cv-cta__title { font-size: var(--font-size-h2); }
+  .cv-cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-inline-s);
+  }
+
+  @media (--bp-tablet) {
+    .impact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .initiatives { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .xp-section--split { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-2xl); }
+  }
+  @media (--bp-desktop) {
+    .xp-section:not(.xp-section--split) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      column-gap: var(--space-2xl);
+      align-items: start;
+    }
+    .xp-section:not(.xp-section--split) > :not(.xp-section__title) { grid-column: 2; }
+    .impact { grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--size-content-1)), 1fr)); }
+    .initiatives { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>

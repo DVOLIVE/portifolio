@@ -1,0 +1,257 @@
+---
+import { Image } from 'astro:assets';
+import type { Block, FindingKind } from '../../content/types';
+
+interface Props {
+  blocks?: Block[];
+}
+
+const { blocks } = Astro.props;
+
+const findingLabel: Record<FindingKind, string> = {
+  observed: 'Observed',
+  interpretation: 'Interpretation',
+  recommendation: 'Recommendation',
+  'open-question': 'Open question',
+};
+---
+
+{
+  !blocks?.length ? (
+    <p class="block-note block-note--pending">
+      <span class="block-note__label mono-label">In progress</span>
+      Documentation for this section is being written.
+    </p>
+  ) : (
+    blocks.map((block) => {
+      switch (block.type) {
+        case 'p':
+          return <p class="block-p">{block.text}</p>;
+        case 'list':
+          return (
+            <ul class="block-list">
+              {block.items.map((item) => <li>{item}</li>)}
+            </ul>
+          );
+        case 'steps':
+          return (
+            <ol class="block-steps" role="list">
+              {block.items.map((step, i) => (
+                <li class="block-steps__item">
+                  <span class="block-steps__index mono-label" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  <div>
+                    <h4 class="block-steps__title">{step.title}</h4>
+                    <p class="block-steps__text">{step.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          );
+        case 'facts':
+          return (
+            <dl class="block-facts">
+              {block.items.map((fact) => (
+                <div class="block-facts__row">
+                  <dt class="mono-label">{fact.label}</dt>
+                  <dd>{fact.value}</dd>
+                </div>
+              ))}
+            </dl>
+          );
+        case 'code':
+          return (
+            <figure class="block-code">
+              <pre tabindex="0" aria-label={`${block.lang} code`}><code>{block.code}</code></pre>
+              <figcaption>{block.caption}</figcaption>
+            </figure>
+          );
+        case 'figure':
+          return (
+            <figure class="block-figure">
+              <Image src={block.image} alt={block.alt} widths={[640, 1280]} sizes="(min-width: 1024px) 800px, 100vw" loading="lazy" />
+              <figcaption>{block.caption}</figcaption>
+            </figure>
+          );
+        case 'gallery':
+          return (
+            <div class="block-gallery">
+              {block.items.map((item) => (
+                <figure class="block-figure">
+                  <Image src={item.image} alt={item.alt} widths={[480, 960, 1280]} sizes="(min-width: 1024px) 560px, 100vw" loading="lazy" />
+                  <figcaption>{item.caption}</figcaption>
+                </figure>
+              ))}
+            </div>
+          );
+        case 'note':
+          return (
+            <p class:list={['block-note', `block-note--${block.tone}`]}>
+              <span class="block-note__label mono-label">{block.tone === 'pending' ? 'Pending' : 'Note'}</span>
+              {block.text}
+            </p>
+          );
+        case 'findings':
+          return (
+            <ul class="block-findings" role="list">
+              {block.items.map((item) => (
+                <li class:list={['block-findings__item', `block-findings__item--${item.kind}`]}>
+                  <span class="block-findings__kind mono-label">{findingLabel[item.kind]}</span>
+                  <p>{item.text}</p>
+                </li>
+              ))}
+            </ul>
+          );
+      }
+    })
+  )
+}
+
+<style>
+  .block-p {
+    max-width: var(--layout-measure);
+    color: var(--color-text-muted);
+  }
+
+  .block-list {
+    display: grid;
+    gap: var(--space-stack-s);
+    max-width: var(--layout-measure);
+    padding-inline-start: var(--space-m);
+    color: var(--color-text-muted);
+  }
+  .block-list li::marker { color: var(--color-accent); }
+
+  .block-steps {
+    position: relative;
+    display: grid;
+    gap: var(--space-stack-s);
+    list-style: none;
+  }
+  .block-steps__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--layout-icon-tile) 1fr;
+    gap: var(--space-inline-s);
+    padding: var(--space-s);
+    border: var(--border-hairline);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+  /* Connector between steps — reads as a pipeline diagram */
+  .block-steps__item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-start: calc(var(--space-s) + var(--layout-icon-tile) / 2);
+    height: var(--space-stack-s);
+    border-inline-start: var(--border-width-strong) solid var(--color-depth);
+  }
+  .block-steps__index {
+    display: grid;
+    place-items: center;
+    width: var(--layout-icon-tile);
+    height: var(--layout-icon-tile);
+    border-radius: var(--radius-icon-tile);
+    background: var(--color-accent-tint);
+    color: var(--color-accent);
+  }
+  .block-steps__title {
+    font-size: var(--font-size-body);
+    font-family: var(--font-family-body);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: normal;
+    margin-block-end: var(--space-3xs);
+  }
+  .block-steps__text {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+  }
+
+  .block-facts {
+    display: grid;
+    margin: 0;
+    border-block-start: var(--border-hairline);
+  }
+  .block-facts__row {
+    display: grid;
+    gap: var(--space-3xs) var(--space-inline-m);
+    padding-block: var(--space-xs);
+    border-block-end: var(--border-hairline);
+  }
+  .block-facts dt { color: var(--color-text-subtle); text-transform: none; }
+  .block-facts dd { margin: 0; color: var(--color-text); }
+
+  .block-code { display: grid; gap: var(--space-2xs); }
+  .block-code pre {
+    margin: 0;
+    padding: var(--space-m);
+    overflow-x: auto;
+    border: var(--border-hairline);
+    border-radius: var(--radius-card);
+    background: var(--color-canvas-deep);
+    color: var(--color-text);
+    font-size: var(--font-size-small);
+    line-height: var(--leading-ui);
+    tab-size: 4;
+  }
+  .block-code figcaption,
+  .block-figure figcaption {
+    color: var(--color-text-subtle);
+    font-size: var(--font-size-small);
+  }
+
+  .block-figure { display: grid; gap: var(--space-2xs); }
+  .block-figure :global(img) {
+    width: 100%;
+    border: var(--border-hairline);
+    border-radius: var(--radius-card);
+  }
+  .block-gallery {
+    display: grid;
+    gap: var(--space-grid);
+  }
+
+  .block-note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2xs) var(--space-inline-s);
+    max-width: var(--layout-measure);
+    padding: var(--space-s);
+    border: var(--border-hairline);
+    border-radius: var(--radius-control);
+    background: var(--color-canvas-deep);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+  }
+  .block-note--pending { border: var(--border-upcoming); }
+  .block-note__label { color: var(--color-accent); }
+  .block-note--pending .block-note__label { color: var(--color-status-in-progress); }
+
+  .block-findings {
+    display: grid;
+    gap: var(--space-stack-s);
+    list-style: none;
+  }
+  .block-findings__item {
+    display: grid;
+    gap: var(--space-3xs);
+    padding: var(--space-s);
+    border-inline-start: var(--border-width-strong) solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+  }
+  .block-findings__kind { color: var(--color-accent); }
+  .block-findings__item--interpretation { border-inline-start-color: var(--blue-400); }
+  .block-findings__item--interpretation .block-findings__kind { color: var(--blue-300); }
+  .block-findings__item--recommendation { border-inline-start-color: var(--color-text-muted); }
+  .block-findings__item--recommendation .block-findings__kind { color: var(--color-text); }
+  .block-findings__item--open-question { border-inline-start-color: var(--color-signal); }
+  .block-findings__item--open-question .block-findings__kind { color: var(--red-300); }
+
+  @media (--bp-tablet) {
+    .block-facts__row { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+    .block-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>

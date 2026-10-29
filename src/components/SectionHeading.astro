@@ -1,0 +1,83 @@
+---
+interface Props {
+  number?: string;
+  eyebrow: string;
+  title: string;
+  subline?: string;
+  id: string;
+  /** 'split' puts the slot (intro text) beside the title from desktop up. */
+  align?: 'start' | 'center' | 'split';
+  level?: 'h1' | 'h2';
+}
+
+const { number, eyebrow, title, subline, id, align = 'start', level = 'h2' } = Astro.props;
+const Heading = level;
+---
+
+<header class:list={['section-heading', `section-heading--${align}`]}>
+  <p class="section-heading__eyebrow mono-label">
+    {number && <span class="section-heading__number">{number}</span>}
+    {number && <span aria-hidden="true">/</span>}
+    <span>{eyebrow}</span>
+    <span class="section-heading__rule" aria-hidden="true"></span>
+  </p>
+  <Heading class="section-heading__title" id={id}>{title}</Heading>
+  {subline && <p class="section-heading__subline">{subline}</p>}
+  {Astro.slots.has('default') && <div class="section-heading__aside"><slot /></div>}
+</header>
+
+<style>
+  .section-heading {
+    display: grid;
+    gap: var(--space-stack-m);
+  }
+
+  .section-heading__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    color: var(--color-text-muted);
+  }
+  .section-heading__number { color: var(--color-accent); }
+  .section-heading__rule {
+    flex: 1;
+    min-width: var(--space-l);
+    border-block-start: var(--border-hairline);
+    margin-inline-start: var(--space-inline-s);
+  }
+
+  .section-heading__title {
+    font-size: var(--font-size-band-title);
+    line-height: var(--leading-tight);
+    max-width: var(--layout-measure-heading);
+  }
+
+  .section-heading__subline {
+    max-width: var(--layout-measure-lead);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-lead);
+  }
+
+  @media (--bp-desktop) {
+    .section-heading--split {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      column-gap: var(--space-2xl);
+      align-items: start;
+    }
+    .section-heading--split .section-heading__eyebrow { grid-column: 1 / -1; }
+    .section-heading--split .section-heading__aside { grid-column: 2; grid-row: 2 / span 2; }
+  }
+
+  .section-heading--center {
+    justify-items: center;
+    text-align: center;
+  }
+  .section-heading--center .section-heading__eyebrow { justify-content: center; width: 100%; }
+  .section-heading--center .section-heading__eyebrow::before {
+    content: '';
+    flex: 1;
+    min-width: var(--space-l);
+    border-block-start: var(--border-hairline);
+    margin-inline-end: var(--space-inline-s);
+  }
+</style>

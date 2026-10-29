@@ -1,0 +1,214 @@
+/*
+ * SEMANTIC TOKENS — the only layer components may reference.
+ *
+ * Every value is an alias of a brand primitive (brand.css), a Utopia step
+ * (utopia.css), an Open Props primitive (open-props.css) or a value fixed by
+ * the project brief. Values the references did not define are marked
+ * PROPOSED and listed in DESIGN_TOKENS.md → "Decisions awaiting approval".
+ */
+:root {
+  color-scheme: dark;
+
+  /* ── 1. Colour roles (brand guide §2, dark theme) ─────────────────── */
+  --color-canvas: var(--ordi-midnight);
+  --color-canvas-deep: var(--neutral-950);
+  --color-surface: var(--neutral-800);
+  --color-surface-hover: var(--brand-surface-hover);
+  --color-border: var(--neutral-700);
+  --color-border-strong: var(--neutral-600);
+  --color-text: var(--ordi-ice);
+  --color-text-muted: var(--ordi-steel);
+  --color-text-subtle: var(--neutral-400);
+  --color-accent: var(--ordi-cyan);
+  --color-accent-hover: var(--cyan-300);
+  --color-accent-ink: var(--ordi-midnight);
+  --color-link: var(--cyan-300);
+  --color-depth: var(--ordi-blue);
+  --color-signal: var(--ordi-red);
+  /* Tint used behind icons — ordivox_design_system.html .info-icon (11% cyan) */
+  --color-accent-tint: color-mix(in srgb, var(--ordi-cyan) 11%, transparent);
+  /* Hero halo — ordivox_design_system.html .hero::before (10% cyan) */
+  --color-accent-halo: color-mix(in srgb, var(--ordi-cyan) 10%, transparent);
+  --color-selection: var(--cyan-900);
+  /* Soft cyan halo for closing sections — kit .hero::before (transparent at 70%) */
+  --surface-halo: radial-gradient(ellipse at 50% 0%, var(--color-accent-halo), transparent 70%);
+
+  /* Project status — label text always accompanies the colour */
+  --color-status-published: var(--cyan-300);
+  --color-status-in-progress: var(--blue-300);
+  --color-status-upcoming: var(--neutral-300);
+
+  /* ── 2. Typography ─────────────────────────────────────────────────── */
+  --font-family-display: 'Manrope Variable', var(--font-display);
+  --font-family-body: 'Inter Variable', var(--font-body);
+  /* System monospace — ordivox_design_system.html `code` stack */
+  --font-family-mono: ui-monospace, SFMono-Regular, Consolas, monospace;
+
+  --font-size-label: var(--text-xs);    /* 12px — eyebrows, metadata */
+  --font-size-small: var(--text-sm);    /* 14px — buttons, captions */
+  --font-size-body: var(--step-0);      /* 16px */
+  --font-size-lead: var(--step-1);      /* 18 → 19px  (brand Lead 17/18) */
+  --font-size-h4: var(--step-2);        /* 20 → 23px  (brand H4 20/22) */
+  --font-size-h3: var(--step-3);        /* 23 → 28px  (brand H3 24/28) */
+  --font-size-h2: var(--step-5);        /* 29 → 40px  (brand H2 30/40) */
+  --font-size-h1: var(--step-8);        /* 41 → 69px  (brand H1 40/64) */
+  --font-size-band-title: var(--step-7);/* 36 → 57px  editorial band headlines */
+  --font-size-metric: var(--step-7);    /* large figures */
+  --font-size-card-title: var(--step-3);
+
+  --font-weight-regular: var(--font-weight-4);
+  --font-weight-medium: var(--font-weight-5);
+  --font-weight-semibold: var(--font-weight-6);
+  --font-weight-bold: var(--font-weight-7);
+  --font-weight-heavy: var(--font-weight-8);
+
+  --leading-body: var(--line-body);           /* 1.6 */
+  --leading-heading: var(--line-heading);     /* 1.15 */
+  --leading-tight: var(--font-lineheight-0);  /* 1.1 — display headlines */
+  --leading-ui: var(--font-lineheight-3);     /* 1.5 — compact UI text */
+
+  --tracking-heading-role: var(--tracking-heading);   /* -0.03em */
+  --tracking-label-role: var(--tracking-label);       /* 0.06em */
+  --tracking-wordmark: -0.045em;                      /* kit .logo */
+
+  /* Hero display — editorial exception fixed by the brief */
+  --hero-display-min: 4.5rem;
+  --hero-display-preferred: 16vw;
+  --hero-display-max: 14rem;
+  --hero-display-size: clamp(var(--hero-display-min), var(--hero-display-preferred), var(--hero-display-max));
+  --hero-display-leading: .82;
+  --hero-display-tracking: -.05em;
+  --hero-display-weight: var(--font-weight-heavy);
+
+  /* ── 3. Spacing (Utopia, 4px grid) ────────────────────────────────── */
+  --space-gutter: var(--space-s-m);          /* brand 16 → 24px page margin */
+  --space-section: var(--space-xl-3xl);      /* brand 48 → 96px section padding */
+  --space-grid: var(--space-s-m);            /* brand 16 → 24px grid gap */
+  --space-card: var(--space-6);              /* brand card padding 24px … */
+  --space-card-compact: var(--space-5);      /* … and 20px on mobile */
+  --space-stack-xs: var(--space-2xs);
+  --space-stack-s: var(--space-xs);
+  --space-stack-m: var(--space-s);
+  --space-stack-l: var(--space-m-l);
+  --space-stack-xl: var(--space-l-2xl);
+  --space-inline-xs: var(--space-2xs);
+  --space-inline-s: var(--space-xs);
+  --space-inline-m: var(--space-m);
+
+  /* ── 4. Radii (brand) ─────────────────────────────────────────────── */
+  --radius-control: var(--radius-md);   /* buttons, inputs: 12px */
+  --radius-card: var(--radius-lg);      /* cards: 16px */
+  --radius-panel: var(--radius-xl);     /* panels, bands: 24px */
+  --radius-badge: var(--radius-pill);
+  --radius-icon-tile: var(--radius-md); /* kit .info-icon: 12px */
+  --radius-round: var(--radius-pill);
+
+  /* ── 5. Shadows and elevation ─────────────────────────────────────── */
+  --elevation-rest: var(--shadow-card);   /* brand card shadow */
+  --elevation-raised: var(--shadow-5);    /* Open Props, dark settings */
+  --elevation-overlay: var(--shadow-6);
+
+  /* ── 6. Borders ───────────────────────────────────────────────────── */
+  --border-width: var(--border-size-1);        /* brand: 1px */
+  --border-width-strong: var(--border-size-2); /* focus outline: 2px */
+  --border-hairline: var(--border-width) solid var(--color-border);
+  --border-upcoming: var(--border-width) dashed var(--color-border-strong);
+
+  /* ── 7. Layout ────────────────────────────────────────────────────── */
+  --layout-container: var(--container-max);    /* 1200px */
+  --layout-wide: var(--size-xl);               /* 1440px */
+  --layout-measure: 70ch;                      /* brand: 65–75 characters */
+  --layout-measure-lead: 40rem;                /* brand: lead up to ~640px */
+  --layout-measure-heading: 50rem;             /* brand: hero titles up to ~800px */
+  --layout-header-height: 64px;                /* brand: 64 / 72 / 80px */
+  --layout-control-height: var(--control-height);
+  --layout-icon-size: var(--icon-size);
+  --layout-icon-stroke: 1.75;                  /* brand: line icons 1.75–2px */
+  --layout-icon-tile: 44px;                    /* kit .info-icon */
+  --layout-avatar: var(--space-10);            /* 40px */
+  --layout-avatar-lg: var(--space-12);         /* 48px */
+  --layout-badge-height: 28px;                 /* kit .tag min-height */
+  --layout-cover-ratio: var(--ratio-widescreen);
+
+  --z-raised: var(--layer-1);
+  --z-header: var(--layer-4);
+  --z-menu: var(--layer-5);
+  --z-intro: var(--layer-important);
+
+  /* ── 8. Breakpoints → src/styles/media.css (custom media) ──────────── */
+
+  /* ── 9. Motion ────────────────────────────────────────────────────── */
+  --motion-fast: var(--duration-fast);     /* 150ms hover / press */
+  --motion-base: var(--duration-base);     /* 220ms transitions */
+  --motion-enter: var(--duration-slow);    /* 320ms entrances */
+  --motion-ease: var(--ease-standard);
+
+  --intro-duration: 2000ms;                /* brief: ≈ 2 s */
+  --intro-lift: var(--space-xs);           /* 12px vertical lift */
+  --intro-text-out-at: calc(var(--intro-duration) - 2 * var(--motion-enter));
+  --intro-curtain-at: calc(var(--intro-duration) - var(--motion-enter));
+
+  --glyph-stagger: 42ms;                   /* brief */
+  --glyph-duration: var(--motion-enter);
+  --glyph-lift: var(--space-s-l);          /* 16 → 32px */
+
+  --hover-lift: calc(-1 * var(--space-3xs));  /* cards: -4px */
+  --press-lift: -1px;                         /* kit .btn:hover */
+  --reveal-distance: var(--space-m);
+
+  /* ── 10. Interaction states ───────────────────────────────────────── */
+  --focus-outline: var(--border-width-strong) solid var(--ordi-cyan);
+  --focus-offset: 3px;                       /* kit :focus-visible */
+  --focus-shadow: var(--focus-ring);
+  --state-hover-surface: var(--color-surface-hover);
+  --state-hover-border: var(--color-border-strong);
+  --state-active-border: var(--color-accent);
+  --state-disabled-text: var(--neutral-400);
+  --state-disabled-border: var(--neutral-700);
+
+  /* ── 11. WebGL hero parameters — PROPOSED (tuned visually) ─────────── */
+  --ribbon-bg: var(--color-canvas);
+  --ribbon-color-1: var(--ordi-cyan);
+  --ribbon-color-2: var(--ordi-blue);
+  --ribbon-color-3: var(--ordi-red);
+  --ribbon-intensity-1: .85;   /* cyan  */
+  --ribbon-intensity-2: 1.3;   /* blue  — darker hue needs more gain */
+  --ribbon-intensity-3: .38;   /* red   — used sparingly */
+  --ribbon-width: .018;        /* core half-width, fraction of viewport height */
+  --ribbon-glow: 6;            /* glow radius as a multiple of the core width */
+  --ribbon-glow-strength: .32;
+  --ribbon-bloom: 1.4;         /* extra light where ribbons cross */
+  --ribbon-speed: .5;          /* drift, radians of wave phase per second */
+  --ribbon-amplitude: .085;    /* wave height, fraction of viewport height */
+  --ribbon-focus-x: .64;       /* centre of the light field (0 = left)   */
+  --ribbon-focus-y: .62;       /* (0 = bottom)                            */
+  --ribbon-falloff: 4.6;       /* how fast light fades away from the focus */
+  --ribbon-grain: .012;        /* dithering against gradient banding */
+  --ribbon-max-dpr: 1.5;       /* device-pixel-ratio cap */
+  --ribbon-render-scale: .75;  /* internal resolution, upscaled by CSS */
+  --ribbon-max-fps: 30;
+  --ribbon-fade-in: var(--motion-enter);
+
+  /* Readability overlay above the canvas: fades down to the canvas colour and
+     darkens the lower-left corner where the headline sits. PROPOSED stops. */
+  --hero-overlay:
+    linear-gradient(to bottom, transparent 40%, color-mix(in srgb, var(--color-canvas) 70%, transparent) 76%, var(--color-canvas)),
+    linear-gradient(to right, color-mix(in srgb, var(--color-canvas) 55%, transparent), transparent 60%);
+  /* Static stand-in when WebGL is unavailable or still loading. PROPOSED. */
+  --hero-fallback:
+    radial-gradient(ellipse 55% 40% at 66% 34%, color-mix(in srgb, var(--ordi-blue) 55%, transparent), transparent 70%),
+    radial-gradient(ellipse 38% 22% at 60% 38%, color-mix(in srgb, var(--ordi-cyan) 24%, transparent), transparent 70%),
+    radial-gradient(ellipse 20% 10% at 78% 28%, color-mix(in srgb, var(--ordi-red) 16%, transparent), transparent 70%);
+
+  /* ── 12. Accessibility ────────────────────────────────────────────── */
+  --a11y-min-target: var(--control-height);  /* 48px touch targets */
+  --a11y-underline-offset: 3px;              /* kit: text-underline-offset */
+  --a11y-underline-thickness: var(--border-size-1);
+}
+
+@media (--bp-tablet) {
+  :root { --layout-header-height: 72px; }
+}
+@media (--bp-desktop) {
+  :root { --layout-header-height: 80px; }
+}

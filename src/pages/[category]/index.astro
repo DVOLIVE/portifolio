@@ -1,0 +1,157 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import Icon from '../../components/Icon.astro';
+import { categories } from '../../content/expertise';
+import type { Category } from '../../content/types';
+import { categorySummary, projectsIn, url } from '../../lib/content';
+
+export const getStaticPaths = (() =>
+  categories.map((category) => ({ params: { category: category.slug }, props: { category } }))) satisfies GetStaticPaths;
+
+interface Props {
+  category: Category;
+}
+
+const { category } = Astro.props;
+const list = projectsIn(category.id);
+const others = categories.filter((c) => c.id !== category.id);
+---
+
+<BaseLayout title={category.title} description={category.description} section="expertise">
+  <PageHeader
+    back={{ label: 'All areas of expertise', href: '/#expertise' }}
+    eyebrow={`Expertise / ${category.number}`}
+    title={category.title}
+    lead={category.intro}
+  >
+    <p class="category-meta mono-label">{categorySummary(category.id)}</p>
+  </PageHeader>
+
+  <section class="category-section" aria-labelledby="scope-title">
+    <div class="container category-layout">
+      <div class="category-scope">
+        <h2 class="category-section__title" id="scope-title">What this area covers</h2>
+        <ul class="scope-list" role="list">
+          {category.scope.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+
+      <div class="category-projects">
+        <h2 class="category-section__title" id="projects-title">Projects</h2>
+        <ul class="project-grid" role="list" aria-labelledby="projects-title">
+          {list.map((project) => <li><ProjectCard project={project} /></li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <nav class="category-nav" aria-label="Other areas of expertise">
+    <div class="container category-nav__inner">
+      {
+        others.map((other) => (
+          <a class="category-nav__link" href={url(`/${other.slug}/`)}>
+            <span class="mono-label">Expertise / {other.number}</span>
+            <span class="category-nav__title">{other.title}</span>
+            <Icon name="arrow-right" />
+          </a>
+        ))
+      }
+    </div>
+  </nav>
+</BaseLayout>
+
+<style>
+  .category-meta { color: var(--color-text-subtle); }
+
+  .category-section { padding-block: var(--space-section); }
+  .category-layout {
+    display: grid;
+    gap: var(--space-stack-xl);
+  }
+  .category-section__title {
+    margin-block-end: var(--space-stack-m);
+    font-size: var(--font-size-h3);
+  }
+
+  .scope-list {
+    display: grid;
+    list-style: none;
+    border-block-start: var(--border-hairline);
+  }
+  .scope-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-s);
+    padding-block: var(--space-xs);
+    border-block-end: var(--border-hairline);
+    color: var(--color-text-muted);
+  }
+  .scope-list li::before {
+    content: '';
+    flex-shrink: 0;
+    width: var(--space-2xs);
+    height: var(--space-2xs);
+    border-radius: var(--radius-round);
+    background: var(--color-accent);
+  }
+
+  .project-grid {
+    display: grid;
+    gap: var(--space-grid);
+    list-style: none;
+  }
+
+  .category-nav {
+    padding-block: var(--space-l-xl);
+    border-block-start: var(--border-hairline);
+    background: var(--color-canvas-deep);
+  }
+  .category-nav__inner {
+    display: grid;
+    gap: var(--space-grid);
+  }
+  .category-nav__link {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: var(--space-3xs) var(--space-inline-s);
+    padding: var(--space-m);
+    border: var(--border-hairline);
+    border-radius: var(--radius-card);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition:
+      border-color var(--motion-base) var(--motion-ease),
+      background-color var(--motion-base) var(--motion-ease);
+  }
+  .category-nav__link :global(.icon) { grid-column: 2; grid-row: 1 / span 2; color: var(--color-accent); }
+  .category-nav__title {
+    color: var(--color-text);
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
+  }
+  .category-nav__link:hover {
+    border-color: var(--state-active-border);
+    background: var(--color-surface);
+  }
+
+  @media (--bp-tablet) {
+    .project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .category-nav__inner { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (--bp-desktop) {
+    .category-layout {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+      column-gap: var(--space-2xl);
+      align-items: start;
+    }
+    .category-scope {
+      position: sticky;
+      inset-block-start: calc(var(--layout-header-height) + var(--space-m));
+    }
+  }
+</style>

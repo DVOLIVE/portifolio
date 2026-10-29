@@ -1,0 +1,57 @@
+---
+import { site, contact } from '../content/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container container--wide site-footer__inner mono-label">
+    <p class="site-footer__identity">
+      <span>{site.name}</span>
+      <span aria-hidden="true">·</span>
+      <span>Professional portfolio</span>
+      <span aria-hidden="true">·</span>
+      <span>© {year}</span>
+      <span aria-hidden="true">·</span>
+      <span>{site.location}</span>
+    </p>
+    <ul class="site-footer__links" role="list">
+      <li><a href={contact.github} target="_blank" rel="noopener noreferrer">GitHub<span class="sr-only"> (opens in a new tab)</span></a></li>
+      <li><a href={contact.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn<span class="sr-only"> (opens in a new tab)</span></a></li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-block-start: var(--border-hairline);
+    background: var(--color-canvas-deep);
+  }
+  .site-footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-stack-s) var(--space-inline-m);
+    padding-block: var(--space-l-xl);
+    color: var(--color-text-subtle);
+  }
+  .site-footer__identity {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+  }
+  .site-footer__links {
+    display: flex;
+    gap: var(--space-inline-m);
+    list-style: none;
+  }
+  .site-footer__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--a11y-min-target);
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .site-footer__links a:hover { color: var(--color-accent-hover); }
+</style>

@@ -1,0 +1,96 @@
+---
+import Icon from './Icon.astro';
+import type { IconName } from '../content/types';
+import { url } from '../lib/content';
+
+interface Props {
+  href: string;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  icon?: IconName;
+  iconPosition?: 'start' | 'end';
+  external?: boolean;
+  download?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  href,
+  variant = 'primary',
+  icon,
+  iconPosition = 'end',
+  external = false,
+  download,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<a
+  class:list={['button', `button--${variant}`, className]}
+  href={url(href)}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener noreferrer' : undefined}
+  download={download}
+  {...rest}
+>
+  {icon && iconPosition === 'start' && <Icon name={icon} />}
+  <span><slot /></span>
+  {icon && iconPosition === 'end' && <Icon name={icon} />}
+  {external && <span class="sr-only">(opens in a new tab)</span>}
+</a>
+
+<style>
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-inline-xs);
+    min-height: var(--layout-control-height);
+    padding: var(--space-xs) var(--space-m);
+    border: var(--border-width) solid transparent;
+    border-radius: var(--radius-control);
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--leading-ui);
+    text-align: center;
+    text-decoration: none;
+    max-width: 100%;
+    transition:
+      background-color var(--motion-base) var(--motion-ease),
+      border-color var(--motion-base) var(--motion-ease),
+      color var(--motion-base) var(--motion-ease),
+      transform var(--motion-fast) var(--motion-ease);
+  }
+
+  .button :global(.icon) {
+    transition: transform var(--motion-base) var(--motion-ease);
+  }
+
+  .button--primary {
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+  .button--secondary {
+    background: transparent;
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+  }
+  .button--ghost {
+    min-height: var(--a11y-min-target);
+    padding-inline: var(--space-2xs);
+    background: transparent;
+    color: var(--color-text);
+  }
+
+  @media (--can-hover) {
+    .button:hover { transform: translateY(var(--press-lift)); }
+    .button--primary:hover { background: var(--color-accent-hover); }
+    .button--secondary:hover { background: var(--state-hover-surface); border-color: var(--state-hover-border); }
+    .button--ghost:hover { color: var(--color-accent-hover); }
+    .button:hover :global(.icon) { transform: translateX(var(--space-3xs)); }
+  }
+
+  .button:active { transform: none; }
+</style>

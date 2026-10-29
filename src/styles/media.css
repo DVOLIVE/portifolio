@@ -1,0 +1,16 @@
+/*
+ * BREAKPOINTS AND MEDIA FEATURES — single source of truth.
+ * Values come from the brand guide §4: mobile ≤ 639px, tablet 640–1023px,
+ * desktop ≥ 1024px, wide ≥ 1440px. Injected into every stylesheet by
+ * postcss.config.cjs (postcss-global-data + postcss-custom-media), so
+ * components write `@media (--bp-tablet)` instead of raw pixel values.
+ */
+@custom-media --bp-tablet (min-width: 640px);
+@custom-media --bp-desktop (min-width: 1024px);
+@custom-media --bp-wide (min-width: 1440px);
+@custom-media --bp-below-tablet (max-width: 639.98px);
+@custom-media --bp-below-desktop (max-width: 1023.98px);
+
+@custom-media --motion-ok (prefers-reduced-motion: no-preference);
+@custom-media --motion-reduce (prefers-reduced-motion: reduce);
+@custom-media --can-hover (hover: hover) and (pointer: fine);

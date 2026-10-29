@@ -1,0 +1,60 @@
+---
+import { intro } from '../content/profile';
+
+/*
+ * Purely aesthetic curtain. It only plays when the inline script in
+ * BaseLayout sets <html data-intro="play">: JavaScript available, no
+ * reduced-motion preference, no #anchor in the URL and not already seen in
+ * this browser session. The page underneath is fully rendered and reachable
+ * the whole time (the curtain ignores pointer events and is aria-hidden).
+ */
+const text = intro.line.replace(/\.$/, '');
+---
+
+<div class="intro" aria-hidden="true">
+  <p class="intro__line">{text}<span class="intro__dot">.</span></p>
+</div>
+
+<style>
+  .intro { display: none; }
+
+  @media (--motion-ok) {
+    :global(:root[data-intro='play']) .intro {
+      position: fixed;
+      inset: 0;
+      z-index: var(--z-intro);
+      display: grid;
+      place-items: center;
+      padding-inline: var(--space-gutter);
+      background: var(--color-canvas);
+      pointer-events: none;
+      animation: intro-curtain var(--motion-enter) var(--motion-ease) var(--intro-curtain-at) forwards;
+    }
+
+    :global(:root[data-intro='play']) .intro__line {
+      animation:
+        intro-line-in var(--motion-enter) var(--motion-ease) both,
+        intro-line-out var(--motion-enter) var(--motion-ease) var(--intro-text-out-at) forwards;
+    }
+  }
+
+  .intro__line {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-h2);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: var(--tracking-heading-role);
+    color: var(--color-text);
+    text-align: center;
+  }
+  .intro__dot { color: var(--color-accent); }
+
+  @keyframes intro-line-in {
+    from { opacity: 0; transform: translateY(var(--intro-lift)); }
+  }
+  @keyframes intro-line-out {
+    to { opacity: 0; }
+  }
+  @keyframes intro-curtain {
+    to { opacity: 0; visibility: hidden; }
+  }
+</style>

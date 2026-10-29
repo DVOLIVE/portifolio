@@ -1,0 +1,293 @@
+---
+import Button from './Button.astro';
+import Icon from './Icon.astro';
+import { navigation, site, contact } from '../content/site';
+import { url } from '../lib/content';
+
+interface Props {
+  /** 'overlay' starts transparent above the hero; 'solid' is used on inner pages. */
+  variant?: 'overlay' | 'solid';
+  /** Highlights a landing-page section on inner pages, e.g. "expertise". */
+  section?: string;
+}
+
+const { variant = 'solid', section } = Astro.props;
+const sectionOf = (href: string) => href.split('#')[1] ?? '';
+---
+
+<header class="site-header" data-variant={variant} data-site-header>
+  <div class="container container--wide site-header__inner">
+    <a class="wordmark" href={url('/')}>
+      Daniel Oliveira<span class="wordmark__dot" aria-hidden="true">.</span>
+      <span class="sr-only">— home</span>
+    </a>
+
+    <nav class="site-nav" aria-label="Main">
+      <ul class="site-nav__list" role="list">
+        {
+          navigation.map((item) => (
+            <li>
+              <a
+                class:list={['site-nav__link', { 'is-active': section === sectionOf(item.href) }]}
+                href={url(item.href)}
+                data-nav-section={sectionOf(item.href)}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <Button href={site.cv.href} variant="secondary" icon="download" download={site.cv.fileName} class="site-header__cv">
+        {site.cv.label}
+      </Button>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle>
+        <Icon name="menu" class="menu-toggle__icon menu-toggle__icon--open" />
+        <Icon name="close" class="menu-toggle__icon menu-toggle__icon--close" />
+        <span class="sr-only" data-menu-label>Open menu</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" hidden data-menu>
+    <nav class="container" aria-label="Main (mobile)">
+      <ul class="mobile-menu__list" role="list">
+        {
+          navigation.map((item) => (
+            <li>
+              <a class="mobile-menu__link" href={url(item.href)} data-nav-section={sectionOf(item.href)}>
+                {item.label}
+                <Icon name="arrow-right" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mobile-menu__footer">
+        <Button href={site.cv.href} icon="download" download={site.cv.fileName}>{site.cv.label}</Button>
+        <div class="mobile-menu__social">
+          <a href={contact.linkedin} target="_blank" rel="noopener noreferrer"><Icon name="linkedin" label="LinkedIn (opens in a new tab)" /></a>
+          <a href={contact.github} target="_blank" rel="noopener noreferrer"><Icon name="github" label="GitHub (opens in a new tab)" /></a>
+          <a href={`mailto:${contact.email}`}><Icon name="mail" label={`Email ${contact.email}`} /></a>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+<div class="header-sentinel" aria-hidden="true" data-header-sentinel></div>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-site-header]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+  const label = document.querySelector<HTMLElement>('[data-menu-label]');
+
+  function setMenu(open: boolean, { restoreFocus = false } = {}) {
+    if (!toggle || !menu || !header) return;
+    toggle.setAttribute('aria-expanded', String(open));
+    menu.hidden = !open;
+    header.toggleAttribute('data-menu-open', open);
+    if (label) label.textContent = open ? 'Close menu' : 'Open menu';
+    if (!open && restoreFocus) toggle.focus();
+  }
+
+  toggle?.addEventListener('click', () => setMenu(toggle.getAttribute('aria-expanded') !== 'true'));
+  menu?.addEventListener('click', (event) => {
+    if ((event.target as Element).closest('a')) setMenu(false);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') setMenu(false, { restoreFocus: true });
+  });
+  // The toggle is hidden by CSS at the desktop breakpoint; close the menu then.
+  window.addEventListener('resize', () => {
+    if (toggle && getComputedStyle(toggle).display === 'none') setMenu(false);
+  });
+
+  // Solid background once the page scrolls past the top.
+  const sentinel = document.querySelector('[data-header-sentinel]');
+  if (header && sentinel && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => header.toggleAttribute('data-scrolled', !entry.isIntersecting)).observe(sentinel);
+  }
+
+  // Highlight the landing-page section currently in view.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.site-nav__link[data-nav-section]')];
+  const sections = links
+    .map((link) => document.getElementById(link.dataset.navSection ?? ''))
+    .filter((el): el is HTMLElement => Boolean(el));
+  if (sections.length && 'IntersectionObserver' in window) {
+    const visible = new Map<string, boolean>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => visible.set(entry.target.id, entry.isIntersecting));
+        const current = sections.find((section) => visible.get(section.id));
+        links.forEach((link) => {
+          const active = link.dataset.navSection === current?.id;
+          link.classList.toggle('is-active', active);
+          if (active) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        });
+      },
+      { rootMargin: '-45% 0px -50% 0px' },
+    );
+    sections.forEach((section) => observer.observe(section));
+  }
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: var(--z-header);
+    height: var(--layout-header-height);
+    background: var(--color-canvas);
+    border-block-end: var(--border-width) solid var(--color-border);
+    transition:
+      background-color var(--motion-base) var(--motion-ease),
+      border-color var(--motion-base) var(--motion-ease);
+  }
+  .site-header[data-variant='overlay']:not([data-scrolled]):not([data-menu-open]) {
+    background: transparent;
+    border-block-end-color: transparent;
+  }
+
+  .header-sentinel {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    width: var(--border-width);
+    height: var(--layout-header-height);
+    pointer-events: none;
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-inline-m);
+    height: 100%;
+  }
+
+  .wordmark {
+    color: var(--color-text);
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-heavy);
+    letter-spacing: var(--tracking-wordmark);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .wordmark__dot { color: var(--color-accent); }
+
+  .site-nav { display: none; }
+  .site-nav__list {
+    display: flex;
+    gap: var(--space-inline-xs);
+    list-style: none;
+  }
+  .site-nav__link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--a11y-min-target);
+    padding-inline: var(--space-xs);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--motion-ease);
+  }
+  .site-nav__link::after {
+    content: '';
+    position: absolute;
+    inset-inline: var(--space-xs);
+    inset-block-end: var(--space-xs);
+    border-block-start: var(--border-width-strong) solid var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--motion-base) var(--motion-ease);
+  }
+  .site-nav__link:hover { color: var(--color-text); }
+  .site-nav__link.is-active { color: var(--color-text); }
+  .site-nav__link.is-active::after { transform: scaleX(1); }
+
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-s);
+  }
+  .site-header__actions :global(.site-header__cv) { display: none; }
+
+  .menu-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: var(--a11y-min-target);
+    height: var(--a11y-min-target);
+    padding: 0;
+    border: var(--border-hairline);
+    border-radius: var(--radius-control);
+    background: var(--color-canvas);
+    color: var(--color-text);
+    cursor: pointer;
+  }
+  .menu-toggle :global(.menu-toggle__icon) { grid-area: 1 / 1; }
+  .menu-toggle[aria-expanded='true'] :global(.menu-toggle__icon--open),
+  .menu-toggle[aria-expanded='false'] :global(.menu-toggle__icon--close) { visibility: hidden; }
+
+  .mobile-menu {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 100%;
+    max-height: calc(100dvh - var(--layout-header-height));
+    overflow-y: auto;
+    padding-block: var(--space-s) var(--space-l);
+    background: var(--color-canvas);
+    border-block-end: var(--border-hairline);
+    box-shadow: var(--elevation-overlay);
+  }
+  .mobile-menu__list { list-style: none; }
+  .mobile-menu__link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--a11y-min-target);
+    padding-block: var(--space-xs);
+    border-block-end: var(--border-hairline);
+    color: var(--color-text);
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+  }
+  .mobile-menu__link :global(.icon) { color: var(--color-accent); }
+  .mobile-menu__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-inline-m);
+    margin-block-start: var(--space-l);
+  }
+  .mobile-menu__social { display: flex; gap: var(--space-inline-xs); }
+  .mobile-menu__social a {
+    display: inline-grid;
+    place-items: center;
+    width: var(--a11y-min-target);
+    height: var(--a11y-min-target);
+    border: var(--border-hairline);
+    border-radius: var(--radius-control);
+    color: var(--color-text);
+  }
+
+  @media (--bp-tablet) {
+    .site-header__actions :global(.site-header__cv) { display: inline-flex; }
+  }
+
+  @media (--bp-desktop) {
+    .site-nav { display: block; }
+    .menu-toggle,
+    .mobile-menu { display: none; }
+  }
+</style>

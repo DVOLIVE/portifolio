@@ -1,0 +1,117 @@
+---
+import Icon from './Icon.astro';
+import Badge from './Badge.astro';
+import type { Category } from '../content/types';
+import { categorySummary, url } from '../lib/content';
+
+interface Props {
+  category: Category;
+}
+
+const { category } = Astro.props;
+const headingId = `expertise-${category.id}`;
+---
+
+<article class="expertise-card" aria-labelledby={headingId}>
+  <div class="expertise-card__top">
+    <span class="expertise-card__icon"><Icon name={category.icon} /></span>
+    <span class="expertise-card__number mono-label" aria-hidden="true">{category.number}</span>
+  </div>
+  <h3 class="expertise-card__title" id={headingId}>{category.title}</h3>
+  <p class="expertise-card__description">{category.description}</p>
+  <ul class="expertise-card__badges" role="list" aria-label="Focus areas">
+    {category.badges.map((badge) => <li><Badge>{badge}</Badge></li>)}
+  </ul>
+  <p class="expertise-card__meta mono-label">{categorySummary(category.id)}</p>
+  <a class="expertise-card__cta" href={url(`/${category.slug}/`)}>
+    {category.cta}
+    <Icon name="arrow-right" />
+  </a>
+</article>
+
+<style>
+  .expertise-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-m);
+    height: 100%;
+    padding: var(--space-card);
+    border: var(--border-hairline);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    box-shadow: var(--elevation-rest);
+    transition:
+      transform var(--motion-base) var(--motion-ease),
+      box-shadow var(--motion-base) var(--motion-ease),
+      border-color var(--motion-base) var(--motion-ease),
+      background-color var(--motion-base) var(--motion-ease);
+  }
+
+  .expertise-card__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-block-end: var(--space-stack-s);
+  }
+  .expertise-card__icon {
+    display: grid;
+    place-items: center;
+    width: var(--layout-icon-tile);
+    height: var(--layout-icon-tile);
+    border-radius: var(--radius-icon-tile);
+    background: var(--color-accent-tint);
+    color: var(--color-accent);
+  }
+  .expertise-card__number { color: var(--color-text-subtle); }
+
+  .expertise-card__title { font-size: var(--font-size-card-title); }
+  .expertise-card__description { color: var(--color-text-muted); }
+
+  .expertise-card__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    list-style: none;
+  }
+  .expertise-card__meta {
+    margin-block-start: auto;
+    padding-block-start: var(--space-stack-m);
+    border-block-start: var(--border-hairline);
+    color: var(--color-text-subtle);
+  }
+
+  .expertise-card__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    min-height: var(--a11y-min-target);
+    color: var(--color-link);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+  }
+  /* The whole card is the link target. */
+  .expertise-card__cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .expertise-card__cta :global(.icon) { transition: transform var(--motion-base) var(--motion-ease); }
+  .expertise-card__cta:focus-visible { outline: none; box-shadow: none; }
+  .expertise-card:has(.expertise-card__cta:focus-visible) {
+    outline: var(--focus-outline);
+    outline-offset: var(--focus-offset);
+    box-shadow: var(--focus-shadow);
+  }
+
+  @media (--can-hover) {
+    .expertise-card:hover {
+      transform: translateY(var(--hover-lift));
+      border-color: var(--state-active-border);
+      background: var(--color-surface-hover);
+      box-shadow: var(--elevation-raised);
+    }
+    .expertise-card:hover .expertise-card__cta :global(.icon) { transform: translateX(var(--space-2xs)); }
+  }
+</style>

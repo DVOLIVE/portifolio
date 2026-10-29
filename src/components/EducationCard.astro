@@ -1,0 +1,101 @@
+---
+import Avatar from './Avatar.astro';
+import type { EducationRecord } from '../content/types';
+
+interface Props {
+  record: EducationRecord;
+  variant: 'outline' | 'filled';
+}
+
+const { record, variant } = Astro.props;
+
+const dates = record.start
+  ? `${record.start} – ${record.end ?? (record.status === 'in-progress' ? 'Ongoing' : '')}`
+  : record.completed
+    ? `Completed ${record.completed}`
+    : undefined;
+---
+
+<article class:list={['education-card', `education-card--${variant}`]}>
+  <header class="education-card__header">
+    <Avatar initials={record.initials} label={record.institution ?? record.program} size="lg" />
+    <div class="education-card__institution">
+      <span>{record.institution ?? 'Professional certification'}</span>
+      {record.format && <span class="education-card__format">{record.format}</span>}
+    </div>
+  </header>
+  <h3 class="education-card__program">{record.program}</h3>
+  {record.description && <p class="education-card__description">{record.description}</p>}
+  <footer class="education-card__footer mono-label">
+    {dates && <span>{dates}</span>}
+    {
+      record.status === 'in-progress' && (
+        <span class="education-card__status">
+          <span class="education-card__dot" aria-hidden="true" />
+          In progress
+        </span>
+      )
+    }
+  </footer>
+</article>
+
+<style>
+  .education-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-m);
+    padding: var(--space-card);
+    border-radius: var(--radius-card);
+    break-inside: avoid;
+  }
+  .education-card--outline {
+    border: var(--border-hairline);
+    background: var(--color-surface);
+  }
+  .education-card--filled {
+    border: var(--border-width) solid var(--color-canvas-deep);
+    background: var(--color-canvas-deep);
+  }
+
+  .education-card__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-s);
+  }
+  .education-card__institution {
+    display: grid;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--leading-ui);
+  }
+  .education-card__format {
+    color: var(--color-text-subtle);
+    font-weight: var(--font-weight-regular);
+  }
+  .education-card__program { font-size: var(--font-size-card-title); }
+  .education-card__description { color: var(--color-text-muted); }
+
+  .education-card__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2xs) var(--space-inline-s);
+    padding-block-start: var(--space-stack-s);
+    border-block-start: var(--border-hairline);
+    color: var(--color-text-subtle);
+  }
+  .education-card__status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    color: var(--color-status-in-progress);
+  }
+  .education-card__dot {
+    width: var(--space-2xs);
+    height: var(--space-2xs);
+    border: var(--border-width) solid currentColor;
+    border-radius: var(--radius-round);
+  }
+</style>

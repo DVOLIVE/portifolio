@@ -1,0 +1,159 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import Badge from './Badge.astro';
+import type { Project } from '../content/types';
+import { hasPage, originLabel, projectPath, url } from '../lib/content';
+
+interface Props {
+  project: Project;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { project, headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+const linked = hasPage(project);
+const origin = project.origin ? originLabel[project.origin] : 'Planned';
+---
+
+<article class:list={['project-card', `project-card--${project.status}`]}>
+  {
+    project.cover && (
+      <div class="project-card__cover">
+        <Image src={project.cover.image} alt="" widths={[480, 800]} sizes="(min-width: 1024px) 560px, 100vw" loading="lazy" />
+      </div>
+    )
+  }
+  <div class="project-card__body">
+    <div class="project-card__labels">
+      <Badge status={project.status} />
+      <span class="project-card__origin mono-label">{origin}{project.year && ` · ${project.year}`}</span>
+    </div>
+    <Heading class="project-card__title">{project.title}</Heading>
+    <p class="project-card__summary">{project.summary}</p>
+    <ul class="project-card__tags" role="list" aria-label="Technologies">
+      {project.tags.map((tag) => <li><Badge tone="quiet">{tag}</Badge></li>)}
+    </ul>
+    {
+      linked ? (
+        <a class="project-card__cta" href={url(projectPath(project))}>
+          {project.status === 'published' ? 'Read the case study' : 'Preview the work in progress'}
+          <span class="sr-only">: {project.title}</span>
+          <Icon name="arrow-right" />
+        </a>
+      ) : (
+        <p class="project-card__pending">
+          Case study not published yet.
+          {project.related?.map((link) => (
+            <a href={url(link.href)}>{link.label}</a>
+          ))}
+        </p>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .project-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    border: var(--border-hairline);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    box-shadow: var(--elevation-rest);
+    transition:
+      transform var(--motion-base) var(--motion-ease),
+      box-shadow var(--motion-base) var(--motion-ease),
+      border-color var(--motion-base) var(--motion-ease);
+  }
+  .project-card--coming-soon {
+    border: var(--border-upcoming);
+    background: var(--color-canvas);
+    box-shadow: none;
+  }
+
+  .project-card__cover {
+    aspect-ratio: var(--layout-cover-ratio);
+    overflow: hidden;
+    border-block-end: var(--border-hairline);
+    background: var(--color-canvas-deep);
+  }
+  .project-card__cover :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top left;
+  }
+
+  .project-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-stack-m);
+    padding: var(--space-card);
+  }
+  .project-card__labels {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2xs) var(--space-inline-s);
+  }
+  .project-card__origin { color: var(--color-text-subtle); }
+  .project-card__title { font-size: var(--font-size-card-title); }
+  .project-card__summary { color: var(--color-text-muted); }
+  .project-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    list-style: none;
+  }
+
+  .project-card__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    min-height: var(--a11y-min-target);
+    margin-block-start: auto;
+    color: var(--color-link);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+  }
+  .project-card__cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .project-card__cta:focus-visible { outline: none; box-shadow: none; }
+  .project-card:has(.project-card__cta:focus-visible) {
+    outline: var(--focus-outline);
+    outline-offset: var(--focus-offset);
+    box-shadow: var(--focus-shadow);
+  }
+  .project-card__cta :global(.icon) { transition: transform var(--motion-base) var(--motion-ease); }
+
+  .project-card__pending {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs) var(--space-inline-s);
+    margin-block-start: auto;
+    color: var(--state-disabled-text);
+    font-size: var(--font-size-small);
+  }
+  .project-card__pending a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--a11y-min-target);
+  }
+
+  @media (--can-hover) {
+    .project-card:has(.project-card__cta):hover {
+      transform: translateY(var(--hover-lift));
+      border-color: var(--state-active-border);
+      box-shadow: var(--elevation-raised);
+    }
+    .project-card:hover .project-card__cta :global(.icon) { transform: translateX(var(--space-2xs)); }
+  }
+</style>

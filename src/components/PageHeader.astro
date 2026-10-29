@@ -1,0 +1,73 @@
+---
+import Icon from './Icon.astro';
+import { url } from '../lib/content';
+
+interface Props {
+  back: { label: string; href: string };
+  eyebrow: string;
+  title: string;
+  lead?: string;
+}
+
+const { back, eyebrow, title, lead } = Astro.props;
+---
+
+<header class="page-header">
+  <div class="container page-header__inner">
+    <a class="page-header__back" href={url(back.href)}>
+      <Icon name="arrow-left" />
+      {back.label}
+    </a>
+    <p class="page-header__eyebrow mono-label">{eyebrow}<span class="page-header__rule" aria-hidden="true"></span></p>
+    <h1 class="page-header__title">{title}</h1>
+    {lead && <p class="page-header__lead">{lead}</p>}
+    <slot />
+  </div>
+</header>
+
+<style>
+  .page-header {
+    padding-block: var(--space-l-2xl) var(--space-l-xl);
+    border-block-end: var(--border-hairline);
+    background: var(--surface-halo), var(--color-canvas);
+  }
+  .page-header__inner {
+    display: grid;
+    gap: var(--space-stack-m);
+  }
+  .page-header__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    justify-self: start;
+    min-height: var(--a11y-min-target);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--motion-ease);
+  }
+  .page-header__back :global(.icon) { transition: transform var(--motion-base) var(--motion-ease); }
+  .page-header__back:hover { color: var(--color-accent-hover); }
+  .page-header__back:hover :global(.icon) { transform: translateX(calc(-1 * var(--space-3xs))); }
+
+  .page-header__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-s);
+    color: var(--color-accent);
+  }
+  .page-header__rule {
+    flex: 1;
+    border-block-start: var(--border-hairline);
+  }
+  .page-header__title {
+    max-width: var(--layout-measure-heading);
+    line-height: var(--leading-tight);
+  }
+  .page-header__lead {
+    max-width: var(--layout-measure-lead);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-lead);
+  }
+</style>

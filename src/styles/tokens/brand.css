@@ -1,0 +1,75 @@
+/*
+ * BRAND PRIMITIVES — copied verbatim from the ORDIVOX design kit v1.0
+ * (ordivox_tokens.css, 2026-10-29 — kept with the ORDIVOX brand files).
+ *
+ * Do not change these values: they are the approved palette and the brand's
+ * base geometry. Personal-portfolio roles are mapped onto them in semantic.css.
+ * Only the custom properties are kept here; the kit's classes and its
+ * breakpoint overrides are re-expressed with fluid Utopia tokens instead.
+ */
+:root {
+  /* Identity — the six colours measured on the approved logo reference */
+  --ordi-midnight: #111B29;
+  --ordi-ice: #F3F7FC;
+  --ordi-cyan: #37BFF4;
+  --ordi-blue: #164BA7;
+  --ordi-red: #F02B42;
+  --ordi-steel: #A8BAD0;
+
+  /* Neutral scale */
+  --neutral-50: #F3F7FC; --neutral-100: #E7EDF5; --neutral-200: #D4DFEB;
+  --neutral-300: #A8BAD0; --neutral-400: #7C91AA; --neutral-500: #5F738B;
+  --neutral-600: #42546B; --neutral-700: #2A3B50; --neutral-800: #1B293B;
+  --neutral-900: #111B29; --neutral-950: #0A121E;
+
+  /* Electric Cyan — primary actions and focus */
+  --cyan-50: #EFFBFF; --cyan-100: #D7F5FF; --cyan-200: #B4ECFF;
+  --cyan-300: #7DDFFF; --cyan-400: #37BFF4; --cyan-500: #12AEE8;
+  --cyan-600: #078DC2; --cyan-700: #086F9A; --cyan-800: #0B5678;
+  --cyan-900: #0C415C; --cyan-950: #092B40;
+
+  /* Performance Blue — depth, charts, secondary states */
+  --blue-50: #EDF4FF; --blue-100: #D8E8FF; --blue-200: #B0D0FF;
+  --blue-300: #83B1F5; --blue-400: #538FDF; --blue-500: #2E70C5;
+  --blue-600: #164BA7; --blue-700: #123E88; --blue-800: #12336D;
+  --blue-900: #122A55; --blue-950: #0B1B38;
+
+  /* Racing Red — performance accent; never body text */
+  --red-50: #FFF0F1; --red-100: #FFDBDE; --red-200: #FFB8BF;
+  --red-300: #FF8D99; --red-400: #FA5D71; --red-500: #F02B42;
+  --red-600: #CF1935; --red-700: #AD1930; --red-800: #871829;
+  --red-900: #641722; --red-950: #3D0C16;
+
+  /* Dark-theme surface that sits outside the scales (kit: --surface-hover) */
+  --brand-surface-hover: #223349;
+
+  /* Typography */
+  --font-display: 'Manrope', 'Inter', Arial, sans-serif;
+  --font-body: 'Inter', Arial, sans-serif;
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem;
+  --text-lg: 1.125rem; --text-xl: 1.375rem;
+  --line-body: 1.6; --line-heading: 1.15;
+  --tracking-heading: -0.03em; --tracking-label: 0.06em;
+
+  /* 4px spacing base (fluid layout spacing lives in utopia.css) */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px;
+  --space-4: 16px; --space-5: 20px; --space-6: 24px;
+  --space-8: 32px; --space-10: 40px; --space-12: 48px;
+  --space-16: 64px; --space-20: 80px; --space-24: 96px;
+  --space-32: 128px;
+
+  /* Geometry */
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+  --radius-xl: 24px; --radius-pill: 999px;
+  --container-max: 1200px;
+  --control-height: 48px;
+  --icon-size: 24px;
+
+  /* Motion */
+  --duration-fast: 150ms; --duration-base: 220ms; --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(.2, .8, .2, 1);
+
+  /* Elevation and focus (dark theme) */
+  --shadow-card: 0 12px 32px rgba(0, 0, 0, .18);
+  --focus-ring: 0 0 0 3px rgba(55, 191, 244, .33);
+}

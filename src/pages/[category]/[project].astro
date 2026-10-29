@@ -1,0 +1,360 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Badge from '../../components/Badge.astro';
+import Button from '../../components/Button.astro';
+import Icon from '../../components/Icon.astro';
+import CaseBlocks from '../../components/case/CaseBlocks.astro';
+import { projects } from '../../content/projects';
+import type { Block, CaseSectionId, Project } from '../../content/types';
+import { getCategory, hasPage, originLabel, projectPath, projectsIn, statusLabel, url } from '../../lib/content';
+
+/* One reusable case-study template for every project that has a page. */
+export const getStaticPaths = (() =>
+  projects.filter(hasPage).map((project) => ({
+    params: { category: getCategory(project.category).slug, project: project.slug },
+    props: { project },
+  }))) satisfies GetStaticPaths;
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const category = getCategory(project.category);
+const backToCategory = { label: category.title, href: `/${category.slug}/` };
+
+const bodySections: { id: CaseSectionId; title: string; optional?: boolean }[] = [
+  { id: 'problem', title: 'The Business Problem' },
+  { id: 'objectives', title: 'Objectives and Hypotheses' },
+  { id: 'architecture', title: 'Data and Architecture' },
+  { id: 'methodology', title: 'Methodology and Implementation' },
+  { id: 'security', title: 'Security and Privacy', optional: true },
+  { id: 'results', title: 'Results and Business Impact' },
+  { id: 'limitations', title: 'Limitations and Next Steps' },
+];
+
+const shown = bodySections.filter((s) => !s.optional || project.sections?.[s.id]);
+const toc = [{ id: 'overview', title: 'Project Overview' }, ...shown, { id: 'resources', title: 'Resources' }].map(
+  (item, i) => ({ ...item, number: String(i + 1).padStart(2, '0') }),
+);
+const number = (id: string) => toc.find((t) => t.id === id)?.number;
+const blocksFor = (id: CaseSectionId): Block[] | undefined => project.sections?.[id];
+
+const siblings = projectsIn(project.category).filter((p) => p.slug !== project.slug);
+const overview = [
+  { label: 'Category', value: category.title },
+  { label: 'Status', value: statusLabel[project.status] + (project.stage ? ` · ${project.stage}` : '') },
+  { label: 'Type', value: project.origin ? originLabel[project.origin] : 'Planned' },
+  ...(project.year ? [{ label: 'Year', value: project.year }] : []),
+  { label: 'Technologies', value: project.tags.join(' · ') },
+];
+---
+
+<BaseLayout title={project.title} description={project.summary} section="expertise" type="article">
+  <PageHeader back={backToCategory} eyebrow={`${category.title} / ${statusLabel[project.status]}`} title={project.title} lead={project.summary}>
+    <div class="project-meta">
+      <Badge status={project.status} />
+      {project.stage && <span class="project-meta__stage mono-label">{project.stage}</span>}
+    </div>
+    {
+      project.links?.length && (
+        <div class="project-links">
+          {project.links.map((link, i) => (
+            <Button href={link.href} external={link.external} variant={i === 0 ? 'primary' : 'secondary'} icon={link.href.includes('github.com') && i === 0 ? 'github' : 'arrow-up-right'} iconPosition={link.href.includes('github.com') && i === 0 ? 'start' : 'end'}>
+              {link.label}
+            </Button>
+          ))}
+        </div>
+      )
+    }
+  </PageHeader>
+
+  {
+    project.status === 'in-development' && (
+      <div class="container">
+        <p class="wip-banner">
+          <span class="mono-label">Work in progress</span>
+          This page previews a project that is still being developed. It describes the questions and scope only — no findings are presented until they have been validated.
+        </p>
+      </div>
+    )
+  }
+
+  <div class="container case">
+    <nav class="case__toc" aria-label="On this page">
+      <p class="case__toc-title mono-label">On this page</p>
+      <ol role="list">
+        {toc.map((item) => <li><a href={`#${item.id}`}><span class="mono-label">{item.number}</span>{item.title}</a></li>)}
+      </ol>
+    </nav>
+
+    <article class="case__body">
+      <section class="case-section" id="overview" aria-labelledby="overview-title">
+        <h2 class="case-section__title" id="overview-title"><span class="mono-label">{number('overview')}</span>Project Overview</h2>
+        {
+          project.brand && (
+            <div class="product-identity">
+              <Image class="product-identity__logo" src={project.brand.logo} alt={project.brand.logoAlt} widths={[400, 763]} sizes="(min-width: 1024px) 763px, 100vw" />
+              <p class="product-identity__caption mono-label">Product identity — ORDIVOX design system v1.0</p>
+            </div>
+          )
+        }
+        <dl class="overview-facts">
+          {overview.map((fact) => (
+            <div>
+              <dt class="mono-label">{fact.label}</dt>
+              <dd>{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+        {
+          project.cover && (
+            <figure class="case-cover">
+              <Image src={project.cover.image} alt={project.cover.alt} widths={[640, 1280]} sizes="(min-width: 1024px) 800px, 100vw" loading="eager" />
+            </figure>
+          )
+        }
+      </section>
+
+      {
+        shown.map((section) => (
+          <section class="case-section" id={section.id} aria-labelledby={`${section.id}-title`}>
+            <h2 class="case-section__title" id={`${section.id}-title`}>
+              <span class="mono-label">{number(section.id)}</span>
+              {section.title}
+            </h2>
+            <div class="case-section__body">
+              <CaseBlocks blocks={blocksFor(section.id)} />
+            </div>
+          </section>
+        ))
+      }
+
+      <section class="case-section" id="resources" aria-labelledby="resources-title">
+        <h2 class="case-section__title" id="resources-title"><span class="mono-label">{number('resources')}</span>Resources</h2>
+        <div class="resources">
+          <div>
+            <h3 class="resources__title">Links</h3>
+            {
+              project.links?.length ? (
+                <ul class="resources__links" role="list">
+                  {project.links.map((link) => (
+                    <li>
+                      <a href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>
+                        {link.label}
+                        <Icon name="arrow-up-right" />
+                        {link.external && <span class="sr-only">(opens in a new tab)</span>}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p class="resources__empty">Repository and demo links will be added when they are public.</p>
+              )
+            }
+          </div>
+          <div>
+            <h3 class="resources__title">Related technologies</h3>
+            <ul class="resources__tags" role="list">
+              {project.tags.map((tag) => <li><Badge tone="quiet">{tag}</Badge></li>)}
+            </ul>
+          </div>
+          <div>
+            <h3 class="resources__title">More in {category.shortTitle}</h3>
+            {
+              siblings.length ? (
+                <ul class="resources__links" role="list">
+                  {siblings.map((p) =>
+                    hasPage(p) ? (
+                      <li><a href={url(projectPath(p))}>{p.title}<Icon name="arrow-right" /></a></li>
+                    ) : (
+                      <li class="resources__upcoming">{p.title} <span class="mono-label">· {statusLabel[p.status]}</span></li>
+                    ),
+                  )}
+                </ul>
+              ) : (
+                <p class="resources__empty">More projects in this area are on the way.</p>
+              )
+            }
+          </div>
+        </div>
+      </section>
+
+      <div class="case__back">
+        <Button href={backToCategory.href} variant="secondary" icon="arrow-left" iconPosition="start">Back to {category.title}</Button>
+      </div>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .project-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2xs) var(--space-inline-s);
+  }
+  .project-meta__stage { color: var(--color-text-subtle); }
+  .project-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-inline-s);
+    margin-block-start: var(--space-stack-s);
+  }
+
+  .wip-banner {
+    display: grid;
+    gap: var(--space-3xs);
+    margin-block-start: var(--space-l);
+    padding: var(--space-s) var(--space-m);
+    border: var(--border-upcoming);
+    border-radius: var(--radius-card);
+    color: var(--color-text-muted);
+  }
+  .wip-banner .mono-label { color: var(--color-status-in-progress); }
+
+  .case {
+    display: grid;
+    gap: var(--space-stack-xl);
+    padding-block: var(--space-section);
+  }
+
+  .case__toc {
+    display: none;
+  }
+  .case__toc-title { color: var(--color-text-subtle); margin-block-end: var(--space-xs); }
+  .case__toc ol {
+    display: grid;
+    list-style: none;
+    border-inline-start: var(--border-hairline);
+  }
+  .case__toc a {
+    display: flex;
+    gap: var(--space-inline-s);
+    padding: var(--space-2xs) var(--space-s);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--motion-ease);
+  }
+  .case__toc a .mono-label { color: var(--color-text-subtle); }
+  .case__toc a:hover { color: var(--color-text); }
+
+  .case__body {
+    display: grid;
+    gap: var(--space-2xl-3xl);
+    min-width: 0;
+  }
+  .case-section {
+    display: grid;
+    gap: var(--space-stack-l);
+    scroll-margin-top: calc(var(--layout-header-height) + var(--space-m));
+  }
+  .case-section__title {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-inline-s);
+    padding-block-start: var(--space-stack-m);
+    border-block-start: var(--border-hairline);
+    font-size: var(--font-size-h2);
+  }
+  .case-section__title .mono-label { color: var(--color-accent); }
+  .case-section__body {
+    display: grid;
+    gap: var(--space-stack-m);
+  }
+
+  /* ORDIVOX identity panel, following the kit's .brand-header */
+  .product-identity {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-s);
+    padding: var(--space-l) var(--space-m);
+    border: var(--border-hairline);
+    border-radius: var(--radius-panel);
+    background: var(--color-canvas);
+    text-align: center;
+  }
+  .product-identity :global(.product-identity__logo) {
+    width: auto;
+    max-width: 100%;
+    border-radius: var(--radius-sm);
+  }
+  .product-identity__caption { color: var(--color-text-subtle); }
+  .overview-facts {
+    display: grid;
+    gap: var(--space-grid);
+    margin: 0;
+  }
+  .overview-facts div {
+    display: grid;
+    gap: var(--space-3xs);
+    padding-block-start: var(--space-xs);
+    border-block-start: var(--border-hairline);
+  }
+  .overview-facts dt { color: var(--color-text-subtle); }
+  .overview-facts dd { margin: 0; color: var(--color-text); }
+
+  .case-cover :global(img) {
+    width: 100%;
+    border: var(--border-hairline);
+    border-radius: var(--radius-card);
+  }
+
+  .resources {
+    display: grid;
+    gap: var(--space-stack-l);
+  }
+  .resources__title {
+    margin-block-end: var(--space-stack-s);
+    font-size: var(--font-size-h4);
+  }
+  .resources__links {
+    display: grid;
+    list-style: none;
+    border-block-start: var(--border-hairline);
+  }
+  .resources__links li { border-block-end: var(--border-hairline); }
+  .resources__links a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-inline-s);
+    min-height: var(--a11y-min-target);
+    color: var(--color-link);
+    text-decoration: none;
+  }
+  .resources__links a:hover { color: var(--color-text); }
+  .resources__upcoming {
+    padding-block: var(--space-xs);
+    color: var(--state-disabled-text);
+  }
+  .resources__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    list-style: none;
+  }
+  .resources__empty { color: var(--color-text-subtle); }
+
+  @media (--bp-tablet) {
+    .overview-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .resources { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  @media (--bp-desktop) {
+    .case {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+      column-gap: var(--space-2xl);
+      align-items: start;
+    }
+    .case__toc {
+      display: block;
+      position: sticky;
+      inset-block-start: calc(var(--layout-header-height) + var(--space-m));
+    }
+  }
+</style>

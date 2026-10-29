@@ -1,0 +1,147 @@
+---
+import Icon from './Icon.astro';
+import Avatar from './Avatar.astro';
+import ExperienceCover from './ExperienceCover.astro';
+import type { Experience } from '../content/types';
+import { experiencePath, url } from '../lib/content';
+
+interface Props {
+  experience: Experience;
+}
+
+const { experience } = Astro.props;
+const headingId = `experience-${experience.slug}`;
+const roles = experience.roles.map((r) => r.title).join(' · ');
+---
+
+<article class="experience-card" aria-labelledby={headingId}>
+  <div class="experience-card__cover">
+    <ExperienceCover motif={experience.cover} />
+  </div>
+  <div class="experience-card__body">
+    <p class="experience-card__category mono-label">{experience.category}</p>
+    <h3 class="experience-card__headline" id={headingId}>{experience.headline}</h3>
+    <p class="experience-card__role"><strong>{experience.company}</strong> — {roles}</p>
+    <p class="experience-card__summary">{experience.summary}</p>
+  </div>
+  <footer class="experience-card__footer">
+    <Avatar initials={experience.initials} label={experience.company} />
+    <div class="experience-card__meta">
+      <span class="experience-card__sector">{experience.sector}</span>
+      <span class="experience-card__period mono-label">{experience.period}</span>
+    </div>
+    <a class="experience-card__cta" href={url(experiencePath(experience.slug))}>
+      <span class="sr-only">Read about my experience at {experience.company}</span>
+      <Icon name="arrow-up-right" />
+    </a>
+  </footer>
+</article>
+
+<style>
+  .experience-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--space-xs);
+    border: var(--border-hairline);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--elevation-rest);
+    transition:
+      transform var(--motion-base) var(--motion-ease),
+      box-shadow var(--motion-base) var(--motion-ease),
+      border-color var(--motion-base) var(--motion-ease);
+  }
+
+  .experience-card__cover {
+    aspect-ratio: var(--layout-cover-ratio);
+    overflow: hidden;
+    border-radius: var(--radius-card);
+  }
+
+  .experience-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-s);
+    padding: var(--space-m) var(--space-xs) var(--space-s);
+  }
+  .experience-card__category { color: var(--color-accent); }
+  .experience-card__headline {
+    font-size: var(--font-size-h4);
+    line-height: var(--leading-heading);
+  }
+  .experience-card__role {
+    color: var(--color-text);
+    font-size: var(--font-size-small);
+  }
+  .experience-card__role strong { font-weight: var(--font-weight-semibold); }
+  .experience-card__summary {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    color: var(--color-text-muted);
+  }
+
+  .experience-card__footer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-s);
+    margin-block-start: auto;
+    padding: var(--space-s) var(--space-xs) var(--space-2xs);
+    border-block-start: var(--border-hairline);
+  }
+  .experience-card__meta {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+  }
+  .experience-card__sector {
+    color: var(--color-text);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--leading-ui);
+  }
+  .experience-card__period { color: var(--color-text-subtle); }
+
+  .experience-card__cta {
+    display: grid;
+    place-items: center;
+    width: var(--a11y-min-target);
+    height: var(--a11y-min-target);
+    border: var(--border-hairline);
+    border-radius: var(--radius-round);
+    color: var(--color-text);
+    transition:
+      background-color var(--motion-base) var(--motion-ease),
+      color var(--motion-base) var(--motion-ease),
+      border-color var(--motion-base) var(--motion-ease);
+  }
+  .experience-card__cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-panel);
+  }
+  .experience-card__cta:focus-visible { outline: none; box-shadow: none; }
+  .experience-card:has(.experience-card__cta:focus-visible) {
+    outline: var(--focus-outline);
+    outline-offset: var(--focus-offset);
+    box-shadow: var(--focus-shadow);
+  }
+
+  @media (--can-hover) {
+    .experience-card:hover {
+      transform: translateY(var(--hover-lift));
+      border-color: var(--state-hover-border);
+      box-shadow: var(--elevation-raised);
+    }
+    .experience-card:hover .experience-card__cta {
+      border-color: var(--color-accent);
+      background: var(--color-accent);
+      color: var(--color-accent-ink);
+    }
+  }
+</style>

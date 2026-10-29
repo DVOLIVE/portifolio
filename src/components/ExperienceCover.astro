@@ -1,0 +1,87 @@
+---
+/*
+ * Decorative, procedurally drawn cover — a stand-in until approved imagery
+ * exists. It is not a photograph and carries no company branding.
+ * Colours come from tokens through the classes below.
+ */
+interface Props {
+  motif: 'signal' | 'grid' | 'orbit';
+  /** 'cover' fills and crops (cards); 'contain' keeps the whole drawing (wide banners). */
+  fit?: 'cover' | 'contain';
+}
+
+const { motif, fit = 'cover' } = Astro.props;
+
+const waves = [0, 1, 2, 3, 4].map((n) => {
+  const amp = 26 - n * 4;
+  const y = 95 + n * 14;
+  return `M0 ${y} C 80 ${y - amp}, 140 ${y + amp}, 200 ${y} S 320 ${y - amp}, 400 ${y}`;
+});
+const cells = Array.from({ length: 8 * 4 }, (_, i) => ({ x: (i % 8) * 50 + 8, y: Math.floor(i / 8) * 50 + 22, on: [3, 10, 11, 12, 21, 28].includes(i) }));
+const rings = [36, 62, 88, 114];
+---
+
+<svg class:list={['cover', `cover--${motif}`]} viewBox="0 0 400 225" preserveAspectRatio={fit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet'} aria-hidden="true" focusable="false">
+  <rect class="cover__bg" width="400" height="225"></rect>
+  {
+    motif === 'signal' && (
+      <g fill="none">
+        {waves.map((d, i) => (
+          <path d={d} class={i === 1 ? 'cover__line cover__line--accent' : i === 3 ? 'cover__line cover__line--depth' : 'cover__line'} />
+        ))}
+        <circle cx="300" cy="81" r="5" class="cover__signal" />
+      </g>
+    )
+  }
+  {
+    motif === 'grid' && (
+      <g>
+        {cells.map((c) => (
+          <rect x={c.x} y={c.y} width="34" height="34" rx="6" class={c.on ? 'cover__cell cover__cell--on' : 'cover__cell'} />
+        ))}
+        <rect x={cells[12].x} y={cells[12].y} width="34" height="34" rx="6" class="cover__cell--signal" />
+      </g>
+    )
+  }
+  {
+    motif === 'orbit' && (
+      <g fill="none">
+        {rings.map((r, i) => (
+          <circle cx="250" cy="112" r={r} class={i === 2 ? 'cover__line cover__line--accent' : 'cover__line'} />
+        ))}
+        <circle cx="250" cy="24" r="5" class="cover__dot" />
+        <circle cx="314" cy="178" r="4" class="cover__dot cover__dot--depth" />
+        <circle cx="167" cy="70" r="4" class="cover__signal" />
+      </g>
+    )
+  }
+</svg>
+
+<style>
+  .cover {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .cover__bg { fill: var(--color-canvas-deep); }
+  .cover__line {
+    stroke: var(--color-border-strong);
+    stroke-width: var(--border-width-strong);
+    vector-effect: non-scaling-stroke;
+  }
+  .cover__line--accent { stroke: var(--color-accent); }
+  .cover__line--depth { stroke: var(--blue-400); }
+  .cover__signal { fill: var(--color-signal); }
+  .cover__dot { fill: var(--color-accent); }
+  .cover__dot--depth { fill: var(--blue-400); }
+  .cover__cell {
+    fill: var(--color-surface);
+    stroke: var(--color-border);
+  }
+  .cover__cell--on { fill: var(--color-depth); }
+  .cover__cell--signal {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: var(--border-width-strong);
+  }
+</style>

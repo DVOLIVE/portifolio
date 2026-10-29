@@ -1,0 +1,121 @@
+---
+import Icon from './Icon.astro';
+import SectionHeading from './SectionHeading.astro';
+import { contactSection } from '../content/profile';
+import { contact } from '../content/site';
+
+const actions = [
+  { icon: 'linkedin', label: contactSection.actions.linkedin, detail: contact.linkedin.replace(/^https:\/\/(www\.)?/, '').replace(/\/$/, ''), href: contact.linkedin, external: true },
+  { icon: 'github', label: contactSection.actions.github, detail: contact.github.replace(/^https:\/\//, ''), href: contact.github, external: true },
+  { icon: 'mail', label: contactSection.actions.email, detail: contact.email, href: `mailto:${contact.email}`, external: false },
+] as const;
+---
+
+<section class="contact" id="contact" aria-labelledby="contact-title">
+  <div class="container contact__inner">
+    <SectionHeading
+      id="contact-title"
+      number={contactSection.number}
+      eyebrow={contactSection.eyebrow}
+      title={contactSection.title}
+      subline={contactSection.subline}
+      align="center"
+    />
+    <ul class="contact__actions" role="list">
+      {
+        actions.map((action, i) => (
+          <li>
+            <a
+              class:list={['contact__action', { 'contact__action--primary': i === 0 }]}
+              href={action.href}
+              target={action.external ? '_blank' : undefined}
+              rel={action.external ? 'noopener noreferrer' : undefined}
+            >
+              <Icon name={action.icon} />
+              <span class="contact__label">{action.label}</span>
+              <span class="contact__detail">{action.detail}</span>
+              {action.external && <span class="sr-only">(opens in a new tab)</span>}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .contact {
+    padding-block: var(--space-section);
+    border-block-start: var(--border-hairline);
+    background: var(--surface-halo), var(--color-canvas);
+  }
+  .contact__inner {
+    display: grid;
+    gap: var(--space-stack-xl);
+  }
+
+  .contact__actions {
+    display: grid;
+    gap: var(--space-grid);
+    list-style: none;
+  }
+
+  .contact__action {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: var(--space-2xs) var(--space-inline-s);
+    height: 100%;
+    padding: var(--space-m);
+    border: var(--border-hairline);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    color: var(--color-text);
+    text-decoration: none;
+    transition:
+      transform var(--motion-base) var(--motion-ease),
+      border-color var(--motion-base) var(--motion-ease),
+      background-color var(--motion-base) var(--motion-ease),
+      box-shadow var(--motion-base) var(--motion-ease);
+  }
+  .contact__action :global(.icon) {
+    grid-row: span 2;
+    color: var(--color-accent);
+  }
+  .contact__label {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--leading-heading);
+  }
+  .contact__detail {
+    overflow-wrap: anywhere;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+  }
+
+  .contact__action--primary {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+  .contact__action--primary :global(.icon),
+  .contact__action--primary .contact__detail { color: var(--color-accent-ink); }
+
+  @media (--bp-desktop) {
+    .contact__actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  @media (--can-hover) {
+    .contact__action:hover {
+      transform: translateY(var(--hover-lift));
+      border-color: var(--state-active-border);
+      background: var(--color-surface-hover);
+      box-shadow: var(--elevation-raised);
+    }
+    .contact__action--primary:hover {
+      border-color: var(--color-accent-hover);
+      background: var(--color-accent-hover);
+    }
+  }
+</style>

@@ -1,0 +1,18 @@
+/*
+ * OPEN PROPS PRIMITIVES — https://open-props.style/
+ * Only the modules the portfolio uses are imported. They are referenced
+ * through semantic.css, never directly from components.
+ */
+@import 'open-props/fonts';    /* --font-weight-*, --font-lineheight-*, --font-letterspacing-* */
+@import 'open-props/borders';  /* --border-size-* */
+@import 'open-props/zindex';   /* --layer-* */
+@import 'open-props/shadows';  /* --shadow-1 … --shadow-6 */
+@import 'open-props/sizes';    /* --size-xl (1440px), --size-content-* */
+@import 'open-props/aspects';  /* --ratio-* */
+
+/* The portfolio is dark-only, so Open Props' own dark shadow settings
+   (shadows.min.css, prefers-color-scheme: dark) apply unconditionally. */
+:root {
+  --shadow-color: 220 40% 2%;
+  --shadow-strength: 25%;
+}

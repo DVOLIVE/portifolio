@@ -1,0 +1,70 @@
+---
+import type { ProjectStatus } from '../content/types';
+import { statusLabel } from '../lib/content';
+
+interface Props {
+  status?: ProjectStatus;
+  tone?: 'default' | 'quiet';
+}
+
+const { status, tone = 'default' } = Astro.props;
+---
+
+{
+  status ? (
+    <span class:list={['badge', 'badge--status', `badge--${status}`]}>
+      <span class="badge__dot" aria-hidden="true" />
+      {statusLabel[status]}
+    </span>
+  ) : (
+    <span class:list={['badge', `badge--${tone}`]}>
+      <slot />
+    </span>
+  )
+}
+
+<style>
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    min-height: var(--layout-badge-height);
+    padding: var(--space-3xs) var(--space-xs);
+    border: var(--border-hairline);
+    border-radius: var(--radius-badge);
+    background: var(--color-canvas);
+    color: var(--color-text);
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--leading-ui);
+    white-space: nowrap;
+  }
+
+  .badge--quiet {
+    background: transparent;
+    color: var(--color-text-muted);
+  }
+
+  .badge--status {
+    font-family: var(--font-family-mono);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: var(--tracking-label-role);
+    text-transform: uppercase;
+  }
+  .badge__dot {
+    width: var(--space-2xs);
+    height: var(--space-2xs);
+    border-radius: var(--radius-round);
+    background: currentColor;
+  }
+  .badge--published { color: var(--color-status-published); }
+  .badge--in-development { color: var(--color-status-in-progress); }
+  .badge--coming-soon {
+    color: var(--color-status-upcoming);
+    border: var(--border-upcoming);
+  }
+  .badge--coming-soon .badge__dot {
+    background: transparent;
+    border: var(--border-width) solid currentColor;
+  }
+</style>
