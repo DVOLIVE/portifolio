@@ -20,8 +20,11 @@ interface Props {
 const { title, description = site.description, variant = 'page', section, type = 'website' } = Astro.props;
 
 const pageTitle = title ? `${title} — ${site.name}` : site.title;
-const canonical = new URL(Astro.url.pathname, Astro.site);
-const ogImage = new URL(url(site.ogImage), Astro.site);
+// Every deployment points search engines and link previews at the official copy.
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const official = (path: string) => new URL(path.replace(/^\//, ''), site.officialUrl);
+const canonical = official(Astro.url.pathname.slice(base.length));
+const ogImage = official(site.ogImage);
 const isHome = variant === 'home';
 
 // Brand Midnight Navy (#111B29) for the browser UI; meta tags cannot read CSS variables.
@@ -31,7 +34,7 @@ const person = {
   '@context': 'https://schema.org',
   '@type': 'Person',
   name: site.name,
-  url: new URL(url('/'), Astro.site).href,
+  url: site.officialUrl,
   jobTitle: 'Data Scientist',
   email: `mailto:${contact.email}`,
   nationality: ['Portuguese', 'Brazilian'],

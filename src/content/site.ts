@@ -20,12 +20,17 @@ export const site = {
     label: 'Download CV',
   },
   ogImage: '/og/daniel-oliveira-og.jpg',
+  /**
+   * The official copy of the site. Every deployment names it as the canonical
+   * page, so the development copy never competes with it in search results.
+   */
+  officialUrl: 'https://dvolive.github.io/portifolio/',
 } as const;
 
 export const contact = {
   email: 'dvoliveira937@gmail.com',
   linkedin: 'https://www.linkedin.com/in/eudanieloliveira/',
-  github: 'https://github.com/agentealfredoclaw',
+  github: 'https://github.com/DVOLIVE',
 } as const;
 
 /** Header call to action. On the home page the hero's CV button turns into it on scroll. */

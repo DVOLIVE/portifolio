@@ -4,7 +4,8 @@ Professional portfolio of Daniel Oliveira: data analytics, data engineering,
 data science and AI automation, told through business problems, solutions and
 verified impact.
 
-**Live:** https://agentealfredoclaw.github.io/portfolio/
+**Live:** https://dvolive.github.io/portifolio/ — official
+(development copy: https://agentealfredoclaw.github.io/portfolio/)
 
 ## Stack
 
@@ -37,6 +38,19 @@ Actions**). The workflow reads the real Pages URL from `actions/configure-pages`
 and passes it to the build as `SITE_URL` and `BASE_PATH`, so the same code works
 for a project site (`/portfolio/`), a `<user>.github.io` repository or a custom
 domain without changes.
+
+The same code is published twice: `official` (github.com/DVOLIVE/portifolio)
+is the official site and `origin` (github.com/agentealfredoclaw/portfolio) the
+development copy. Push to both to keep them in step:
+
+```bash
+git push origin main
+git push official main
+```
+
+Both copies name the official address (`site.officialUrl` in
+`src/content/site.ts`) as the canonical page, so search engines and link
+previews always lead to it. Update it if the official repository is renamed.
 
 ## Where to edit
 
