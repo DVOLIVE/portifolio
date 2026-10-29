@@ -3,7 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Intro from '../components/Intro.astro';
 import Hero from '../components/Hero.astro';
 import SectionHeading from '../components/SectionHeading.astro';
-import Metric from '../components/Metric.astro';
 import ExpertiseCard from '../components/ExpertiseCard.astro';
 import ExperienceCard from '../components/ExperienceCard.astro';
 import EducationCard from '../components/EducationCard.astro';
@@ -11,38 +10,30 @@ import ContactCTA from '../components/ContactCTA.astro';
 import { about, expertiseSection, experienceSection, educationSection } from '../content/profile';
 import { categories } from '../content/expertise';
 import { experiences } from '../content/experience';
-import { education } from '../content/education';
+import { educationTimeline } from '../lib/content';
 ---
 
 <BaseLayout variant="home" type="profile">
   <Intro />
   <Hero />
 
-  <!-- 01 / About -->
-  <section class="band band--about" id="about" aria-labelledby="about-title">
+  <!-- About -->
+  <section class="band" id="about" aria-labelledby="about-title">
     <div class="container">
-      <SectionHeading id="about-title" number={about.number} eyebrow={about.eyebrow} title={about.title} align="split">
+      <SectionHeading id="about-title" title={about.title} align="split">
         <div class="about__text">
           <p class="about__lead">{about.lead}</p>
           {about.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
         </div>
       </SectionHeading>
-      <div class="about__metrics">
-        <dl class="metrics">
-          {about.metrics.map((metric) => <Metric value={metric.value} label={metric.label} />)}
-        </dl>
-        <p class="about__note">{about.metricsNote}</p>
-      </div>
     </div>
   </section>
 
-  <!-- 02 / Expertise -->
+  <!-- Expertise -->
   <section class="band" id="expertise" aria-labelledby="expertise-title">
     <div class="container band__stack">
       <SectionHeading
         id="expertise-title"
-        number={expertiseSection.number}
-        eyebrow={expertiseSection.eyebrow}
         title={expertiseSection.title}
         subline={expertiseSection.subline}
         align="center"
@@ -53,13 +44,11 @@ import { education } from '../content/education';
     </div>
   </section>
 
-  <!-- 03 / Experience -->
+  <!-- Experience -->
   <section class="band band--deep" id="experience" aria-labelledby="experience-title">
     <div class="container band__stack">
       <SectionHeading
         id="experience-title"
-        number={experienceSection.number}
-        eyebrow={experienceSection.eyebrow}
         title={experienceSection.title}
         subline={experienceSection.subline}
       />
@@ -69,40 +58,43 @@ import { education } from '../content/education';
     </div>
   </section>
 
-  <!-- 04 / Education -->
+  <!-- Education -->
   <section class="band" id="education" aria-labelledby="education-title">
     <div class="container band__stack">
       <SectionHeading
         id="education-title"
-        number={educationSection.number}
-        eyebrow={educationSection.eyebrow}
         title={educationSection.title}
         subline={educationSection.subline}
         align="center"
       />
       <ul class="masonry" role="list">
-        {education.map((record, i) => <li class="masonry__item"><EducationCard record={record} variant={i % 2 === 0 ? 'outline' : 'filled'} /></li>)}
+        {educationTimeline().map((record, i) => <li class="masonry__item"><EducationCard record={record} variant={i % 2 === 0 ? 'outline' : 'filled'} /></li>)}
       </ul>
     </div>
   </section>
 
-  <!-- 05 / Contact -->
+  <!-- Contact -->
   <ContactCTA />
 </BaseLayout>
 
 <style>
-  .band {
-    padding-block: var(--space-section);
-    border-block-start: var(--border-hairline);
+  .band { padding-block: var(--space-section); }
+  /* No rules between bands: the deep band fades in from the canvas and back out. */
+  .band--deep {
+    background: linear-gradient(
+      to bottom,
+      var(--color-canvas),
+      var(--color-canvas-deep) var(--band-blend),
+      var(--color-canvas-deep) calc(100% - var(--band-blend)),
+      var(--color-canvas)
+    );
   }
-  .band--deep { background: var(--color-canvas-deep); }
   .band__stack {
     display: grid;
     gap: var(--space-stack-xl);
   }
 
-  /* About: bordered editorial band, headline left and text right */
-  .band--about { border-block-end: var(--border-hairline); }
+  /* About: headline left and text right */
   .about__text {
     display: grid;
     gap: var(--space-stack-m);
@@ -112,21 +104,6 @@ import { education } from '../content/education';
   .about__lead {
     color: var(--color-text);
     font-size: var(--font-size-lead);
-  }
-  .about__metrics {
-    display: grid;
-    gap: var(--space-stack-m);
-    margin-block-start: var(--space-stack-xl);
-  }
-  .metrics {
-    display: grid;
-    gap: var(--space-grid);
-    margin: 0;
-  }
-  .about__note {
-    max-width: var(--layout-measure);
-    color: var(--color-text-subtle);
-    font-size: var(--font-size-small);
   }
 
   .card-grid {
@@ -146,7 +123,6 @@ import { education } from '../content/education';
   }
 
   @media (--bp-tablet) {
-    .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .masonry { columns: 2; }
   }

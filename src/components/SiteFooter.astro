@@ -1,6 +1,8 @@
 ---
 import { site, contact } from '../content/site';
 
+/* One row as tall as the header, so the home page's closing statement sits
+   centred between the two. Below desktop the identity keeps name and year. */
 const year = new Date().getFullYear();
 ---
 
@@ -8,12 +10,9 @@ const year = new Date().getFullYear();
   <div class="container container--wide site-footer__inner mono-label">
     <p class="site-footer__identity">
       <span>{site.name}</span>
-      <span aria-hidden="true">·</span>
-      <span>Professional portfolio</span>
-      <span aria-hidden="true">·</span>
+      <span class="site-footer__extra">Professional portfolio</span>
       <span>© {year}</span>
-      <span aria-hidden="true">·</span>
-      <span>{site.location}</span>
+      <span class="site-footer__extra">{site.location}</span>
     </p>
     <ul class="site-footer__links" role="list">
       <li><a href={contact.github} target="_blank" rel="noopener noreferrer">GitHub<span class="sr-only"> (opens in a new tab)</span></a></li>
@@ -29,21 +28,28 @@ const year = new Date().getFullYear();
   }
   .site-footer__inner {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-stack-s) var(--space-inline-m);
-    padding-block: var(--space-l-xl);
+    gap: var(--space-inline-s);
+    min-height: calc(var(--layout-footer-height) - var(--border-width));
     color: var(--color-text-subtle);
   }
   .site-footer__identity {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-2xs);
+    gap: 0 var(--space-2xs);
+    min-width: 0;
   }
+  .site-footer__identity > span + span::before {
+    content: '·';
+    content: '·' / ''; /* decorative: not read aloud */
+    margin-inline-end: var(--space-2xs);
+  }
+  .site-footer__extra { display: none; }
   .site-footer__links {
     display: flex;
-    gap: var(--space-inline-m);
+    flex-shrink: 0;
+    gap: var(--space-inline-s);
     list-style: none;
   }
   .site-footer__links a {
@@ -54,4 +60,12 @@ const year = new Date().getFullYear();
     text-decoration: none;
   }
   .site-footer__links a:hover { color: var(--color-accent-hover); }
+
+  @media (--bp-tablet) {
+    .site-footer__inner,
+    .site-footer__links { gap: var(--space-inline-m); }
+  }
+  @media (--bp-desktop) {
+    .site-footer__extra { display: inline; }
+  }
 </style>

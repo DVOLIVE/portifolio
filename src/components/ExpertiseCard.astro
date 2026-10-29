@@ -2,7 +2,7 @@
 import Icon from './Icon.astro';
 import Badge from './Badge.astro';
 import type { Category } from '../content/types';
-import { categorySummary, url } from '../lib/content';
+import { url } from '../lib/content';
 
 interface Props {
   category: Category;
@@ -13,16 +13,12 @@ const headingId = `expertise-${category.id}`;
 ---
 
 <article class="expertise-card" aria-labelledby={headingId}>
-  <div class="expertise-card__top">
-    <span class="expertise-card__icon"><Icon name={category.icon} /></span>
-    <span class="expertise-card__number mono-label" aria-hidden="true">{category.number}</span>
-  </div>
+  <span class="expertise-card__icon"><Icon name={category.icon} /></span>
   <h3 class="expertise-card__title" id={headingId}>{category.title}</h3>
   <p class="expertise-card__description">{category.description}</p>
   <ul class="expertise-card__badges" role="list" aria-label="Focus areas">
     {category.badges.map((badge) => <li><Badge>{badge}</Badge></li>)}
   </ul>
-  <p class="expertise-card__meta mono-label">{categorySummary(category.id)}</p>
   <a class="expertise-card__cta" href={url(`/${category.slug}/`)}>
     {category.cta}
     <Icon name="arrow-right" />
@@ -48,14 +44,9 @@ const headingId = `expertise-${category.id}`;
       background-color var(--motion-base) var(--motion-ease);
   }
 
-  .expertise-card__top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-block-end: var(--space-stack-s);
-  }
   .expertise-card__icon {
     display: grid;
+    margin-block-end: var(--space-stack-s);
     place-items: center;
     width: var(--layout-icon-tile);
     height: var(--layout-icon-tile);
@@ -63,7 +54,6 @@ const headingId = `expertise-${category.id}`;
     background: var(--color-accent-tint);
     color: var(--color-accent);
   }
-  .expertise-card__number { color: var(--color-text-subtle); }
 
   .expertise-card__title { font-size: var(--font-size-card-title); }
   .expertise-card__description { color: var(--color-text-muted); }
@@ -74,15 +64,9 @@ const headingId = `expertise-${category.id}`;
     gap: var(--space-2xs);
     list-style: none;
   }
-  .expertise-card__meta {
-    margin-block-start: auto;
-    padding-block-start: var(--space-stack-m);
-    border-block-start: var(--border-hairline);
-    color: var(--color-text-subtle);
-  }
-
   .expertise-card__cta {
     display: inline-flex;
+    margin-block-start: auto; /* CTAs line up at the bottom of the row */
     align-items: center;
     gap: var(--space-inline-xs);
     min-height: var(--a11y-min-target);

@@ -1,7 +1,8 @@
 import { categories } from '../content/expertise';
 import { projects } from '../content/projects';
 import { experiences } from '../content/experience';
-import type { Category, CategoryId, Project, ProjectOrigin, ProjectStatus } from '../content/types';
+import { education } from '../content/education';
+import type { Category, CategoryId, EducationRecord, Project, ProjectOrigin, ProjectStatus } from '../content/types';
 
 /** Prefixes internal paths with the deployment base path. */
 export function url(path: string): string {
@@ -29,6 +30,48 @@ export const projectPath = (project: Project): string =>
 export const experiencePath = (slug: string): string => `/experience/${slug}/`;
 
 export const getExperience = (slug: string) => experiences.find((e) => e.slug === slug);
+
+/** The education page, opened on one course when an id is given. */
+export const educationPath = (id?: string): string => (id ? `/education/#${id}` : '/education/');
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** "Dec 2016" → a number that sorts by date; -Infinity when there is no date. */
+function monthOf(date?: string): number {
+  const [month, year] = date?.split(' ') ?? [];
+  const index = MONTHS.indexOf(month ?? '');
+  return index >= 0 && Number(year) ? Number(year) * 12 + index : -Infinity;
+}
+
+/** Education as a timeline: courses in progress first, then the latest finished. */
+export const educationTimeline = (): EducationRecord[] =>
+  [...education].sort((a, b) => {
+    const when = (r: EducationRecord) => (r.status === 'in-progress' ? Infinity : monthOf(r.end ?? r.completed));
+    return when(b) - when(a) || 0;
+  });
+
+/** Who awarded it; the CV names no institution for some certifications. */
+export const educationIssuer = (record: EducationRecord): string => record.institution ?? 'Professional certification';
+
+/** Short date for a timeline row: "Dec 2016", or "Since Sep 2025" while in progress. */
+export const educationWhen = (record: EducationRecord): string =>
+  record.status === 'in-progress'
+    ? record.start
+      ? `Since ${record.start}`
+      : 'In progress'
+    : (record.completed ?? record.end ?? '');
+
+/** The facts a course panel lists — only what the CV states. */
+export function educationFacts(record: EducationRecord): { label: string; value: string }[] {
+  const facts: [string, string | undefined][] = [
+    ['Institution', record.institution],
+    ['Format', record.format],
+    ['Started', record.start],
+    ['Completed', record.status === 'completed' ? (record.completed ?? record.end) : undefined],
+    ['Status', record.status === 'in-progress' ? 'In progress' : undefined],
+  ];
+  return facts.flatMap(([label, value]) => (value ? [{ label, value }] : []));
+}
 
 export const statusLabel: Record<ProjectStatus, string> = {
   published: 'Case study',

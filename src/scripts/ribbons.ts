@@ -1,8 +1,10 @@
 /**
- * Hero light ribbons — one full-screen WebGL fragment shader, no libraries.
+ * Light ribbons (hero and contact) — one full-screen WebGL fragment shader, no
+ * libraries.
  *
  * Colours, intensities and rendering limits are read from the CSS tokens in
- * src/styles/tokens/semantic.css (§11 "WebGL hero parameters"). The ribbon
+ * src/styles/tokens/semantic.css (§11 "WebGL ribbon parameters"), as seen by
+ * the host element, so a section can override any of them. The ribbon
  * paths and wave-shape constants below are the documented geometry
  * parameters (DESIGN_TOKENS.md → WebGL). Nothing here re-renders the page:
  * the canvas is driven by requestAnimationFrame alone.
@@ -76,6 +78,7 @@ uniform vec3 uColor[3];
 uniform float uIntensity[3];
 uniform vec4 uPath[3];   // base, tilt, freq1, freq2
 uniform vec2 uMotion[3]; // phase, drift
+uniform float uOffset;   // shifts every path up or down
 uniform float uWidth;
 uniform float uGlow;
 uniform float uGlowStrength;
@@ -105,7 +108,7 @@ void main() {
     float a1 = TAU * path.z * uv.x + t + motion.x;
     float a2 = TAU * path.w * uv.x - t * COUNTER_DRIFT + motion.x * PHASE_SPREAD;
 
-    float y = path.x + path.y * (uv.x - 0.5)
+    float y = path.x + uOffset + path.y * (uv.x - 0.5)
       + uAmplitude * (HARMONIC_MIX * sin(a1) + (1.0 - HARMONIC_MIX) * sin(a2));
     float slope = path.y + uAmplitude * TAU
       * (HARMONIC_MIX * path.z * cos(a1) + (1.0 - HARMONIC_MIX) * path.w * cos(a2));
@@ -148,6 +151,7 @@ interface Tokens {
   bloom: number;
   speed: number;
   amplitude: number;
+  offset: number;
   focus: [number, number];
   falloff: number;
   grain: number;
@@ -163,8 +167,8 @@ function hexToRgb(value: string): number[] {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => c / 255);
 }
 
-function readTokens(): Tokens {
-  const style = getComputedStyle(document.documentElement);
+function readTokens(host: HTMLElement): Tokens {
+  const style = getComputedStyle(host);
   const raw = (name: string) => style.getPropertyValue(name).trim();
   const num = (name: string) => parseFloat(raw(name));
   return {
@@ -178,6 +182,7 @@ function readTokens(): Tokens {
     bloom: num('--ribbon-bloom'),
     speed: num('--ribbon-speed'),
     amplitude: num('--ribbon-amplitude'),
+    offset: num('--ribbon-offset-y'),
     focus: [num('--ribbon-focus-x'), num('--ribbon-focus-y')],
     falloff: num('--ribbon-falloff'),
     grain: num('--ribbon-grain'),
@@ -205,7 +210,7 @@ function compile(gl: WebGLRenderingContext, type: number, source: string): WebGL
  * When WebGL is unavailable it returns early and the CSS fallback stays.
  */
 export function mountRibbons(canvas: HTMLCanvasElement, host: HTMLElement): () => void {
-  const tokens = readTokens();
+  const tokens = readTokens(host);
   const gl = canvas.getContext('webgl', {
     alpha: false,
     antialias: false,
@@ -247,7 +252,7 @@ export function mountRibbons(canvas: HTMLCanvasElement, host: HTMLElement): () =
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
     const names = [
-      'uResolution', 'uTime', 'uBackground', 'uHighlight', 'uColor', 'uIntensity', 'uPath', 'uMotion',
+      'uResolution', 'uTime', 'uBackground', 'uHighlight', 'uColor', 'uIntensity', 'uPath', 'uMotion', 'uOffset',
       'uWidth', 'uGlow', 'uGlowStrength', 'uBloom', 'uAmplitude', 'uFocus', 'uFalloff', 'uGrain',
     ];
     uniforms = Object.fromEntries(names.map((name) => [name, gl.getUniformLocation(program!, name)]));
@@ -258,6 +263,7 @@ export function mountRibbons(canvas: HTMLCanvasElement, host: HTMLElement): () =
     gl.uniform1fv(uniforms.uIntensity, tokens.intensities);
     gl.uniform4fv(uniforms.uPath, RIBBON_PATHS.flatMap((p) => [p.base, p.tilt, p.freq[0], p.freq[1]]));
     gl.uniform2fv(uniforms.uMotion, RIBBON_PATHS.flatMap((p) => [p.phase, p.drift]));
+    gl.uniform1f(uniforms.uOffset, tokens.offset);
     gl.uniform1f(uniforms.uWidth, tokens.width);
     gl.uniform1f(uniforms.uGlow, tokens.glow);
     gl.uniform1f(uniforms.uGlowStrength, tokens.glowStrength);

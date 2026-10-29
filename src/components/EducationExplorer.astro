@@ -1,0 +1,247 @@
+---
+import Icon from './Icon.astro';
+import type { EducationRecord } from '../content/types';
+import { educationFacts, educationIssuer, educationWhen } from '../lib/content';
+
+/* Course list beside one detail panel (behaviour: src/scripts/explorer.ts). */
+interface Props {
+  records: EducationRecord[];
+  listLabel: string;
+  pending: string;
+  caption: string;
+}
+
+const { records, listLabel, pending, caption } = Astro.props;
+---
+
+<div class="explorer" data-explorer>
+  <ol class="explorer__list" role="list" aria-label={listLabel} data-explorer-list>
+    {
+      records.map((record) => (
+        <li>
+          <a class="explorer__row" href={`#${record.id}`} id={`${record.id}-tab`} data-explorer-tab={record.id}>
+            <span class="explorer__glyph" aria-hidden="true">{record.initials}</span>
+            <span class="explorer__label">
+              <span class="explorer__title">{record.program}</span>
+              <span class="explorer__summary">
+                {educationWhen(record)} · {educationIssuer(record)}
+              </span>
+            </span>
+            <Icon name="chevron-right" class="explorer__chevron" />
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="explorer__detail">
+    {
+      records.map((record) => (
+        <article class="explorer__panel" id={record.id} aria-labelledby={`${record.id}-heading`} data-explorer-panel>
+          <header class="explorer__strip">
+            <p class="explorer__trail">
+              <span>{educationIssuer(record)}</span>
+              <span class="explorer__divider" aria-hidden="true">/</span>
+              <span class="explorer__current">{record.program}</span>
+            </p>
+          </header>
+          <div class="explorer__body" data-explorer-body>
+            <span class="explorer__glyph explorer__glyph--lg" aria-hidden="true">{record.initials}</span>
+            <h2 class="explorer__heading" id={`${record.id}-heading`}>{record.program}</h2>
+            {record.description ? (
+              <p class="explorer__description">{record.description}</p>
+            ) : (
+              <p class="explorer__description explorer__description--pending">{pending}</p>
+            )}
+            <dl class="explorer__facts">
+              {educationFacts(record).map(({ label, value }) => (
+                <div>
+                  <dt class="mono-label">{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </article>
+      ))
+    }
+    <p class="explorer__caption">{caption}</p>
+  </div>
+</div>
+
+<script>
+  import { mountExplorer } from '../scripts/explorer';
+
+  document.querySelectorAll<HTMLElement>('[data-explorer]').forEach((root) => mountExplorer(root));
+</script>
+
+<style>
+  .explorer {
+    display: grid;
+    gap: var(--space-stack-xl);
+  }
+
+  /* ── List ── */
+  .explorer__list {
+    display: grid;
+    gap: var(--space-3xs);
+    list-style: none;
+  }
+  .explorer__row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-inline-m);
+    min-height: var(--a11y-min-target);
+    padding: var(--space-s) var(--space-m);
+    border-inline-start: var(--border-width-strong) solid transparent;
+    border-radius: 0 var(--radius-control) var(--radius-control) 0;
+    color: var(--color-text);
+    text-decoration: none;
+    transition:
+      background-color var(--motion-base) var(--motion-ease),
+      border-color var(--motion-base) var(--motion-ease);
+  }
+  .explorer__row:hover,
+  .explorer__row[aria-selected='true'] {
+    border-inline-start-color: var(--color-text-subtle);
+    background: var(--color-surface);
+  }
+  .explorer__label {
+    display: grid;
+    gap: var(--space-3xs);
+    min-width: 0;
+  }
+  .explorer__title {
+    font-family: var(--font-family-display);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--leading-heading);
+  }
+  .explorer__summary {
+    overflow: hidden;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+    line-height: var(--leading-ui);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .explorer__row :global(.explorer__chevron) {
+    color: var(--color-text-subtle);
+    transition:
+      color var(--motion-base) var(--motion-ease),
+      transform var(--motion-base) var(--motion-ease);
+  }
+  .explorer__row:hover :global(.explorer__chevron),
+  .explorer__row[aria-selected='true'] :global(.explorer__chevron) {
+    color: var(--color-text);
+    transform: translateX(var(--space-3xs));
+  }
+
+  /* Initials tile — the brand's icon-tile style, no institution logos */
+  .explorer__glyph {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: var(--layout-avatar);
+    height: var(--layout-avatar);
+    border-radius: var(--radius-icon-tile);
+    background: var(--color-accent-tint);
+    color: var(--color-accent);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--tracking-label-role);
+  }
+  .explorer__glyph--lg {
+    width: var(--layout-glyph-lg);
+    height: var(--layout-glyph-lg);
+    border-radius: var(--radius-card);
+    font-size: var(--font-size-body);
+  }
+
+  /* ── Panel ── */
+  .explorer__detail {
+    display: grid;
+    gap: var(--space-grid);
+    align-content: start;
+  }
+  .explorer__panel {
+    overflow: hidden;
+    border: var(--border-hairline);
+    border-radius: var(--radius-panel);
+    background: var(--color-canvas-deep);
+    box-shadow: var(--elevation-rest);
+  }
+  .explorer__strip {
+    padding: var(--space-s) var(--space-m);
+    border-block-end: var(--border-hairline);
+    background: var(--color-surface);
+  }
+  .explorer__trail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs) var(--space-inline-xs);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+    line-height: var(--leading-ui);
+  }
+  .explorer__divider { color: var(--color-text-subtle); }
+  .explorer__current {
+    color: var(--color-text);
+    font-weight: var(--font-weight-medium);
+  }
+  .explorer__body {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-stack-m);
+    padding: var(--space-l) var(--space-m);
+    transition: opacity var(--motion-base) var(--motion-ease);
+  }
+  /* Set for one frame when the panel changes, so the body fades in. */
+  .explorer__body[data-entering] {
+    opacity: 0;
+    transition: none;
+  }
+  .explorer__heading { font-size: var(--font-size-h3); }
+  .explorer__description {
+    max-width: var(--layout-measure);
+    color: var(--color-text-muted);
+  }
+  .explorer__description--pending { color: var(--color-text-subtle); }
+  .explorer__facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-s) var(--space-m);
+    width: 100%;
+    margin: 0;
+    padding-block-start: var(--space-stack-m);
+    border-block-start: var(--border-hairline);
+  }
+  .explorer__facts dt { color: var(--color-text-subtle); }
+  .explorer__facts dd {
+    margin: var(--space-3xs) 0 0;
+    font-weight: var(--font-weight-medium);
+    line-height: var(--leading-ui);
+  }
+  .explorer__caption {
+    color: var(--color-text-subtle);
+    font-size: var(--font-size-small);
+  }
+
+  @media (--bp-tablet) {
+    .explorer__body { padding: var(--space-xl) var(--space-l); }
+  }
+
+  /* Side by side from desktop; the panel stays in view while the list scrolls. */
+  @media (--bp-desktop) {
+    .explorer {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--space-xl);
+      align-items: start;
+    }
+    .explorer[data-enhanced] .explorer__detail {
+      position: sticky;
+      inset-block-start: calc(var(--layout-header-height) + var(--space-m));
+    }
+  }
+</style>

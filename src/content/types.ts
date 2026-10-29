@@ -16,6 +16,7 @@ export type IconName =
   | 'arrow-right'
   | 'arrow-left'
   | 'arrow-up-right'
+  | 'chevron-right'
   | 'download'
   | 'github'
   | 'linkedin'

@@ -1,7 +1,7 @@
 ---
 import Button from './Button.astro';
 import Icon from './Icon.astro';
-import { navigation, site, contact } from '../content/site';
+import { navigation, site, contact, contactCta } from '../content/site';
 import { url } from '../lib/content';
 
 interface Props {
@@ -13,12 +13,14 @@ interface Props {
 
 const { variant = 'solid', section } = Astro.props;
 const sectionOf = (href: string) => href.split('#')[1] ?? '';
+// One span per word: on the home page each hero name line docks onto its word (src/scripts/dock.ts).
+const nameWords = site.name.split(' ');
 ---
 
 <header class="site-header" data-variant={variant} data-site-header>
   <div class="container container--wide site-header__inner">
-    <a class="wordmark" href={url('/')}>
-      Daniel Oliveira<span class="wordmark__dot" aria-hidden="true">.</span>
+    <a class="wordmark" href={url('/')} data-dock-link>
+      {nameWords.map((word, i) => <Fragment>{i > 0 && ' '}<span class="wordmark__word" data-dock-target={`name-${i + 1}`}>{word}{i === nameWords.length - 1 && <span class="wordmark__dot" aria-hidden="true">.</span>}</span></Fragment>)}
       <span class="sr-only">— home</span>
     </a>
 
@@ -41,9 +43,9 @@ const sectionOf = (href: string) => href.split('#')[1] ?? '';
     </nav>
 
     <div class="site-header__actions">
-      <Button href={site.cv.href} variant="secondary" icon="download" download={site.cv.fileName} class="site-header__cv">
-        {site.cv.label}
-      </Button>
+      <span class="site-header__contact" data-dock-target="contact">
+        <Button href={contactCta.href} variant="secondary" icon="mail">{contactCta.label}</Button>
+      </span>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle>
         <Icon name="menu" class="menu-toggle__icon menu-toggle__icon--open" />
         <Icon name="close" class="menu-toggle__icon menu-toggle__icon--close" />
@@ -67,11 +69,10 @@ const sectionOf = (href: string) => href.split('#')[1] ?? '';
         }
       </ul>
       <div class="mobile-menu__footer">
-        <Button href={site.cv.href} icon="download" download={site.cv.fileName}>{site.cv.label}</Button>
+        <Button href={contactCta.href} icon="mail">{contactCta.label}</Button>
         <div class="mobile-menu__social">
           <a href={contact.linkedin} target="_blank" rel="noopener noreferrer"><Icon name="linkedin" label="LinkedIn (opens in a new tab)" /></a>
           <a href={contact.github} target="_blank" rel="noopener noreferrer"><Icon name="github" label="GitHub (opens in a new tab)" /></a>
-          <a href={`mailto:${contact.email}`}><Icon name="mail" label={`Email ${contact.email}`} /></a>
         </div>
       </div>
     </nav>
@@ -180,6 +181,25 @@ const sectionOf = (href: string) => href.split('#')[1] ?? '';
     white-space: nowrap;
   }
   .wordmark__dot { color: var(--color-accent); }
+  /* Same line box as the hero name lines, so the scroll dock lands exactly */
+  .wordmark__word {
+    display: inline-block;
+    line-height: var(--hero-display-leading);
+  }
+
+  /* Home page: hidden until the hero name and CV button dock into them on
+     scroll (src/scripts/dock.ts drives opacity and visibility from here). */
+  :global(:root[data-dock]) .wordmark,
+  :global(:root[data-dock]) .site-header__contact { visibility: hidden; }
+  :global(:root[data-dock]) .wordmark__word,
+  :global(:root[data-dock]) .site-header__contact { opacity: 0; }
+  /* The open menu needs the whole header; !important outranks the scroll animations. */
+  .site-header[data-menu-open] .wordmark,
+  .site-header[data-menu-open] .wordmark__word,
+  .site-header[data-menu-open] .site-header__contact {
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
 
   .site-nav { display: none; }
   .site-nav__list {
@@ -218,7 +238,11 @@ const sectionOf = (href: string) => href.split('#')[1] ?? '';
     align-items: center;
     gap: var(--space-inline-s);
   }
-  .site-header__actions :global(.site-header__cv) { display: none; }
+  .site-header__contact {
+    display: none;
+    border-radius: var(--radius-control);
+    background: var(--color-canvas);
+  }
 
   .menu-toggle {
     display: inline-grid;
@@ -282,7 +306,7 @@ const sectionOf = (href: string) => href.split('#')[1] ?? '';
   }
 
   @media (--bp-tablet) {
-    .site-header__actions :global(.site-header__cv) { display: inline-flex; }
+    .site-header__contact { display: inline-flex; }
   }
 
   @media (--bp-desktop) {

@@ -1,7 +1,10 @@
 ---
 import Avatar from './Avatar.astro';
+import Icon from './Icon.astro';
 import type { EducationRecord } from '../content/types';
+import { educationIssuer, educationPath, url } from '../lib/content';
 
+/* The whole card links to the course on the education page. */
 interface Props {
   record: EducationRecord;
   variant: 'outline' | 'filled';
@@ -20,11 +23,13 @@ const dates = record.start
   <header class="education-card__header">
     <Avatar initials={record.initials} label={record.institution ?? record.program} size="lg" />
     <div class="education-card__institution">
-      <span>{record.institution ?? 'Professional certification'}</span>
+      <span>{educationIssuer(record)}</span>
       {record.format && <span class="education-card__format">{record.format}</span>}
     </div>
   </header>
-  <h3 class="education-card__program">{record.program}</h3>
+  <h3 class="education-card__program">
+    <a class="education-card__link" href={url(educationPath(record.id))}>{record.program}</a>
+  </h3>
   {record.description && <p class="education-card__description">{record.description}</p>}
   <footer class="education-card__footer mono-label">
     {dates && <span>{dates}</span>}
@@ -36,17 +41,24 @@ const dates = record.start
         </span>
       )
     }
+    <Icon name="arrow-up-right" class="education-card__arrow" />
   </footer>
 </article>
 
 <style>
   .education-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: var(--space-stack-m);
     padding: var(--space-card);
     border-radius: var(--radius-card);
     break-inside: avoid;
+    transition:
+      transform var(--motion-base) var(--motion-ease),
+      border-color var(--motion-base) var(--motion-ease),
+      background-color var(--motion-base) var(--motion-ease),
+      box-shadow var(--motion-base) var(--motion-ease);
   }
   .education-card--outline {
     border: var(--border-hairline);
@@ -74,13 +86,28 @@ const dates = record.start
     font-weight: var(--font-weight-regular);
   }
   .education-card__program { font-size: var(--font-size-card-title); }
+  .education-card__link {
+    color: inherit;
+    text-decoration: none;
+  }
+  .education-card__link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-card);
+  }
+  .education-card__link:focus-visible { outline: none; box-shadow: none; }
+  .education-card:has(.education-card__link:focus-visible) {
+    outline: var(--focus-outline);
+    outline-offset: var(--focus-offset);
+    box-shadow: var(--focus-shadow);
+  }
   .education-card__description { color: var(--color-text-muted); }
 
   .education-card__footer {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
     gap: var(--space-2xs) var(--space-inline-s);
     padding-block-start: var(--space-stack-s);
     border-block-start: var(--border-hairline);
@@ -90,7 +117,32 @@ const dates = record.start
     display: inline-flex;
     align-items: center;
     gap: var(--space-2xs);
+    margin-inline-start: auto;
     color: var(--color-status-in-progress);
+  }
+  .education-card__footer :global(.education-card__arrow) {
+    width: var(--font-size-lead);
+    height: var(--font-size-lead);
+    margin-inline-start: auto;
+    color: var(--color-text-subtle);
+    transition:
+      color var(--motion-base) var(--motion-ease),
+      transform var(--motion-base) var(--motion-ease);
+  }
+  .education-card__status + :global(.education-card__arrow) { margin-inline-start: 0; }
+
+  @media (--can-hover) {
+    .education-card:hover {
+      transform: translateY(var(--hover-lift));
+      border-color: var(--state-active-border);
+      box-shadow: var(--elevation-raised);
+    }
+    .education-card--outline:hover { background: var(--color-surface-hover); }
+    .education-card--filled:hover { background: var(--color-surface); }
+    .education-card:hover :global(.education-card__arrow) {
+      color: var(--color-accent);
+      transform: translate(var(--space-3xs), calc(-1 * var(--space-3xs)));
+    }
   }
   .education-card__dot {
     width: var(--space-2xs);

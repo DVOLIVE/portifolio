@@ -1,0 +1,59 @@
+---
+/* Light-ribbon background (src/scripts/ribbons.ts) for a section that sets
+   `position: relative; isolation: isolate`. The section can override any
+   --ribbon-* token, including the overlay and the no-WebGL fallback. */
+interface Props {
+  /** Lets the home-page scroll dock move the ribbons slower than the page (src/scripts/dock.ts). */
+  parallax?: boolean;
+}
+
+const { parallax = false } = Astro.props;
+---
+
+<div class="ribbon-field" aria-hidden="true" data-ribbon-field>
+  <div class="ribbon-field__depth" data-dock-parallax={parallax ? '' : undefined}>
+    <div class="ribbon-field__fallback"></div>
+    <canvas class="ribbon-field__canvas" data-ribbons></canvas>
+  </div>
+  <div class="ribbon-field__overlay"></div>
+</div>
+
+<script>
+  import { mountRibbons } from '../scripts/ribbons';
+
+  document.querySelectorAll<HTMLElement>('[data-ribbon-field]').forEach((field) => {
+    const canvas = field.querySelector<HTMLCanvasElement>('[data-ribbons]');
+    if (!canvas) return;
+    try {
+      mountRibbons(canvas, field);
+    } catch (error) {
+      console.warn('[ribbons] disabled:', error);
+    }
+  });
+</script>
+
+<style>
+  .ribbon-field {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    background: var(--ribbon-bg);
+  }
+  .ribbon-field__depth,
+  .ribbon-field__fallback,
+  .ribbon-field__canvas,
+  .ribbon-field__overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .ribbon-field__fallback { background: var(--ribbon-fallback); }
+  .ribbon-field__canvas {
+    opacity: 0;
+    transition: opacity var(--ribbon-fade-in) var(--motion-ease);
+  }
+  .ribbon-field__canvas[data-ready] { opacity: 1; }
+  .ribbon-field__overlay { background: var(--ribbon-overlay); }
+</style>

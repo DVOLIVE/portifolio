@@ -28,6 +28,12 @@ export const contact = {
   github: 'https://github.com/agentealfredoclaw',
 } as const;
 
+/** Header call to action. On the home page the hero's CV button turns into it on scroll. */
+export const contactCta = {
+  label: 'Get in Touch',
+  href: `mailto:${contact.email}`,
+} as const;
+
 /** Section anchors on the landing page, in page order. */
 export const navigation: Link[] = [
   { label: 'About', href: '/#about' },

@@ -78,6 +78,8 @@ const person = {
         <script is:inline>
           (function () {
             var root = document.documentElement;
+            // The hero name and CV button dock into the header on scroll (src/scripts/dock.ts).
+            root.setAttribute('data-dock', '');
             try {
               if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
               if (location.hash || sessionStorage.getItem('do-intro-seen')) return;

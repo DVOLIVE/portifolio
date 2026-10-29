@@ -13,7 +13,7 @@ verified impact.
   refresh, no client router) and pages ship almost no JavaScript.
 - **CSS design tokens** — ORDIVOX brand primitives, [Open Props](https://open-props.style/)
   and [Utopia](https://utopia.fyi/) fluid scales. See [DESIGN_TOKENS.md](DESIGN_TOKENS.md).
-- **Vanilla WebGL** for the hero ribbons (one fragment shader, no libraries).
+- **Vanilla WebGL** for the light ribbons in the hero and the contact section (one fragment shader, no libraries).
 - **Self-hosted fonts** (Manrope, Inter). No analytics, no tracking, no backend.
 
 ## Run it
@@ -42,13 +42,14 @@ domain without changes.
 
 | What | File |
 |---|---|
-| Name, metadata, CV file, email, LinkedIn, GitHub, navigation | `src/content/site.ts` |
-| Intro line, hero, About text, metrics, section headings, contact copy | `src/content/profile.ts` |
+| Name, metadata, CV file, email, LinkedIn, GitHub, navigation, header call to action | `src/content/site.ts` |
+| Intro line, hero, About text, section headings, contact copy | `src/content/profile.ts` |
 | The three areas of expertise (cards, badges, category pages, skills in scope) | `src/content/expertise.ts` |
 | Projects and case studies | `src/content/projects.ts` |
 | Project images | `src/assets/projects/<slug>/` (imported in `projects.ts`) |
 | Professional experience (cards and pages) | `src/content/experience.ts` |
-| Education and certifications | `src/content/education.ts` |
+| Education and certifications (home cards and the `/education/` timeline) | `src/content/education.ts` |
+| Education page copy: caption, placeholder for courses without a summary | `src/content/profile.ts` → `educationPage` |
 | CV PDF | replace `public/cv/Daniel-Oliveira-CV.pdf` (same name) |
 | Social preview image | `public/og/daniel-oliveira-og.jpg` (1200 × 630) |
 | Colours, type, spacing, motion, WebGL parameters | `src/styles/tokens/semantic.css` |
@@ -107,9 +108,12 @@ interpretation, recommendation or open question.
 ## Adding experience or education
 
 Append an object to `experiences` (gets a card and a page at
-`/experience/<slug>/`) or to `education` (gets a card in the masonry grid). The
-types in `src/content/types.ts` list every field. Leave optional fields out
-rather than guessing them.
+`/experience/<slug>/`) or to `education` (gets a card in the masonry grid and a
+row on `/education/`; both are sorted by date, most recent first, and the card
+opens the page on its course at `/education/#<id>`). Add a `description` to a
+course to fill its panel on the education page. The types in
+`src/content/types.ts` list every field. Leave optional fields out rather than
+guessing them.
 
 ## Content rules
 
@@ -129,19 +133,34 @@ document language. To add a language, mirror the content files per locale
 ## Accessibility and motion
 
 Semantic landmarks, a skip link, visible focus, keyboard-operable menu (Escape
-closes it), 48px targets, WCAG AA contrast. With `prefers-reduced-motion: reduce`
-the intro is skipped, the name appears immediately and the hero renders one
+closes it), 48px targets, WCAG AA contrast. The education explorer is a set of
+vertical tabs: hover or click a course, or move with the arrow keys, Home and
+End (`src/scripts/explorer.ts`); without JavaScript every course panel is shown
+in turn and the list links to them. With `prefers-reduced-motion: reduce`
+the intro is skipped, the name appears immediately and the ribbons render one
 still frame. Without WebGL a static gradient replaces the shader.
+
+On the home page the hero name zooms out into the header as you scroll, and the
+hero's Download CV button glides up and becomes the header's Get in Touch button;
+the move lasts the whole hero and ends when the About band reaches the header
+(`src/scripts/dock.ts`, timing in `DESIGN_TOKENS.md` → Motion). With reduced
+motion nothing moves: the header's wordmark and button fade in instead. Without
+JavaScript the header shows them from the start. Inner pages always show them.
+
+The page closes on a centred statement: the contact section fills the space
+between the header and a footer of the same height, with the statement in the
+middle and the contact actions below it — reached by scrolling to the end or by
+the Contact link alike.
 
 ## Structure
 
 ```
 src/
 ├── content/        site, profile, expertise, projects, experience, education, types
-├── components/     Hero, Intro, SiteHeader, SiteFooter, SectionHeading, cards, case/CaseBlocks…
+├── components/     Hero, RibbonField, Intro, SiteHeader, SiteFooter, SectionHeading, cards, case/CaseBlocks…
 ├── layouts/        BaseLayout (meta, Open Graph, JSON-LD, intro gate)
-├── pages/          index, [category]/index, [category]/[project], experience/[slug], 404, sitemap, robots
-├── scripts/        ribbons.ts (WebGL)
+├── pages/          index, education, [category]/index, [category]/[project], experience/[slug], 404, sitemap, robots
+├── scripts/        ribbons.ts (WebGL ribbons), dock.ts (scroll dock into the header), explorer.ts (education page)
 ├── styles/         tokens, media queries, global styles
 └── assets/         images processed by Astro (WebP, responsive sizes)
 public/             CV, favicon, Open Graph image
@@ -152,7 +171,9 @@ public/             CV, favicon, Open Graph image
 - Profile photograph (none supplied, none used).
 - Approved company imagery — experience covers are procedural placeholders.
 - Institution for the *AI Engineer for Data Scientists Associate Certification*
-  (not stated in the CV), start dates and descriptions for education records.
+  (not stated in the CV), start dates and descriptions for education records —
+  until a course has a `description`, its panel on `/education/` says
+  “Course summary coming soon.”
 - ORDIVOX: usage, accuracy and time-saved metrics; a vector logo (only the
   763 × 124 raster reference exists); a public demo.
 - Case studies: Starbucks (data sources, method, validated findings),

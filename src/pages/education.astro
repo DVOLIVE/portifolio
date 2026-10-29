@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import EducationExplorer from '../components/EducationExplorer.astro';
+import { educationPage, educationSection } from '../content/profile';
+import { educationTimeline } from '../lib/content';
+
+/* Every course as a timeline, most recent first; the home-page cards link here (#id). */
+---
+
+<BaseLayout title={educationPage.title} description={educationPage.description} section="education">
+  <PageHeader
+    back={{ label: educationPage.back, href: '/#education' }}
+    eyebrow={educationPage.eyebrow}
+    title={educationSection.title}
+    lead={educationSection.subline}
+  />
+
+  <div class="container education">
+    <EducationExplorer
+      records={educationTimeline()}
+      listLabel={educationPage.listLabel}
+      pending={educationPage.pending}
+      caption={educationPage.caption}
+    />
+  </div>
+</BaseLayout>
+
+<style>
+  .education { padding-block: var(--space-section); }
+</style>
