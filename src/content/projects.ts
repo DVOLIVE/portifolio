@@ -6,7 +6,7 @@ import ordivoxPrices from '../assets/projects/ordivox/dashboard-precos.png';
 import ordivoxAgent from '../assets/projects/ordivox/dashboard-agente.png';
 import ordivoxTrends from '../assets/projects/ordivox/dashboard-tendencias.png';
 
-const ORDIVOX_REPO = 'https://github.com/agentealfredoclaw/ORDIVOX';
+const ORDIVOX_REPO = 'https://github.com/DVOLIVE/ORDIVOX';
 
 /**
  * Every project in the portfolio. Order here is the display order inside each
