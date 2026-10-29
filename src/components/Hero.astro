@@ -123,6 +123,34 @@ const fullName = `${hero.name.join(' ')}.`;
       animation-delay: calc(var(--hero-delay, 0ms) + var(--i) * var(--glyph-stagger));
     }
     :global(:root[data-intro='play']) .glyph { --hero-delay: var(--intro-curtain-at); }
+    /* After the opening (Intro.astro), the copy and actions follow the name in,
+       and the rule draws itself (on phones it would show inside the band) */
+    :global(:root[data-intro='play']) .hero__footer {
+      animation: hero-footer-in calc(2 * var(--motion-enter)) var(--motion-ease) var(--intro-copy-at) both;
+    }
+    :global(:root[data-intro='play']) .hero__rule {
+      animation: hero-rule-in calc(2 * var(--motion-enter)) var(--motion-ease) var(--intro-copy-at) both;
+    }
+    /* …and the ribbons settle into the opening's slit as its panels part */
+    :global(:root[data-intro='play']) .hero :global([data-ribbon-field]) {
+      transform-origin: 50% var(--intro-slit);
+      animation: hero-depth-in var(--intro-reveal) var(--intro-reveal-ease) var(--intro-reveal-at) both;
+    }
+  }
+
+  @keyframes hero-rule-in {
+    from { clip-path: inset(calc(-2 * var(--border-width)) 100% calc(-2 * var(--border-width)) 0); }
+  }
+
+  @keyframes hero-depth-in {
+    from { transform: scale(var(--intro-depth-scale)); }
+  }
+
+  @keyframes hero-footer-in {
+    from {
+      opacity: 0;
+      transform: translateY(var(--intro-lift));
+    }
   }
 
   @keyframes glyph-in {

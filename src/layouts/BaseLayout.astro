@@ -86,11 +86,16 @@ const person = {
               sessionStorage.setItem('do-intro-seen', '1');
               root.setAttribute('data-intro', 'play');
               var done = function () { root.setAttribute('data-intro', 'done'); };
+              // Any key, click, touch or scroll lets the opening fade away (src/components/Intro.astro).
+              var skip = function () {
+                if (root.getAttribute('data-intro') === 'play') root.setAttribute('data-intro', 'leave');
+              };
               document.addEventListener('animationend', function (event) {
-                if (event.animationName.indexOf('intro-curtain') !== -1) done();
+                if (/^intro-(curtain|leave)/.test(event.animationName)) done();
               });
-              window.addEventListener('keydown', done, { once: true });
-              window.addEventListener('pointerdown', done, { once: true });
+              ['keydown', 'pointerdown', 'wheel', 'touchstart'].forEach(function (type) {
+                window.addEventListener(type, skip, { once: true, passive: true });
+              });
             } catch (error) {
               root.removeAttribute('data-intro');
             }

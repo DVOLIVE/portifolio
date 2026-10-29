@@ -21,7 +21,7 @@ src/styles/
 | Open Props | `open-props@1.7` — https://open-props.style/ | Imported per module. |
 | Utopia | https://utopia.fyi — 360 → 1440px | Regenerate with the script, never hand-edit. |
 | Semantic | this project | The only layer components may use. |
-| Brief | project brief | Hero display, intro and glyph timing. |
+| Brief | project brief | Hero display and glyph timing. |
 
 ## 1. Colour
 
@@ -116,17 +116,31 @@ Defined once in `src/styles/media.css` and compiled by `postcss-custom-media`:
 |---|---|---|
 | `--motion-fast` / `-base` / `-enter` | 150 / 220 / 320ms | brand |
 | `--motion-ease` | `cubic-bezier(.2,.8,.2,1)` | brand |
-| `--intro-duration` | 2000ms | brief |
-| `--intro-text-out-at`, `--intro-curtain-at` | derived: 1360ms, 1680ms | intro timeline below |
+| `--intro-line-at` / `-open-at` / `-words-at` / `-reveal-at` | 100 / 600 / 700 / 1900ms | proposed — opening below (≈ 3.1 s; the brief asked ≈ 2 s) |
+| `--intro-curtain-at`, `--intro-copy-at` | derived: 2050ms, 2220ms | the hero name, then its copy, come in |
+| `--intro-draw` / `--intro-reveal` / `--intro-word-stagger` | 600 / 1200 / 70ms | proposed |
+| `--intro-ease` / `--intro-reveal-ease` | in-out / `cubic-bezier(.3,.7,.2,1)` | proposed — the band eases open; the panels part briskly, then settle over the last 60% |
+| `--intro-panel`, `--intro-feather` | canvas-deep (as the filled cards), 24px | proposed — near-black panels whose edges fade into the band, so it has no edge lines |
+| `--intro-depth-scale`, `--intro-shade`, `--intro-label-size` | 1.06, canvas-deep at 85%, 15px | proposed — depth around the slit; label 25% above the 12px label size |
+| `--intro-slit` / `--intro-band` | 45 / 14svh on phones, 58 / 16svh from tablet | proposed — where the light opens, level with the hero's ribbons |
 | `--glyph-stagger` / `--glyph-duration` | 42ms / 320ms | brief / brand |
 | `--intro-lift`, `--glyph-lift`, `--reveal-distance`, `--hover-lift` | 12px, 16 → 32px, 24px, −4px | Utopia space steps |
 | `--dock-button-land` / `--dock-handover` | .86 / .94 of the dock scroll | proposed — scroll dock below |
 | `--dock-parallax` / `--dock-fade-span` | .35 of the scroll / .25 of the viewport height | proposed — scroll dock below |
 
-Intro timeline: line fades in with a 12px lift (0–320ms) → holds → fades out
-(1360–1680ms) → curtain lifts (1680–2000ms) while the name enters glyph by
-glyph. It never plays with `prefers-reduced-motion: reduce`, with an `#anchor`
-in the URL, without JavaScript, or twice in one browser session.
+Opening (`src/components/Intro.astro`): two near-black panels cover the hero. A
+line of light draws out from the centre where they meet (100–700ms) and
+dissolves as it opens into a soft-edged band of the hero's own ribbons
+(600–1200ms), deep in a dark vignette; the
+statement rises word by word above it (from 700ms, 70ms apart) while a mono
+label decodes below. Then the panels part on the hero (1900–3100ms) — briskly,
+then slowing for the last 60%, like unwrapping something — carrying the
+statement and label away while the vignette lifts, the ribbons settle into
+the slit (scale 1.06 → 1), the name assembles glyph by glyph (from 2050ms), and
+the copy fades in and the rule draws itself (from 2220ms). The ribbons run throughout, so the hand-over has no cut. Any
+key, click, touch or scroll freezes it and fades it out. It never plays with
+`prefers-reduced-motion: reduce`, with an `#anchor` in the URL, without
+JavaScript, or twice in one browser session.
 
 Scroll dock (home, `src/scripts/dock.ts`): over the hero's whole scroll — it
 ends when Band 2 reaches the header — the hero name zooms out into the header
@@ -191,9 +205,9 @@ it can be changed in one place.
 
 | # | Token(s) | Where | Proposed value and reasoning |
 |---|---|---|---|
-| 1 | `--ribbon-*` intensities, width, glow, bloom, speed, amplitude, focus, falloff, grain; `RIBBON_PATHS`, `RIBBON_SHAPE` | hero shader | Tuned visually: red at 0.38 gain so it stays an accent; light field centred upper-right, fading towards the headline. |
+| 1 | `--ribbon-*` intensities, width, glow, bloom, speed, amplitude, offset, focus, falloff, grain; `RIBBON_PATHS`, `RIBBON_SHAPE` | hero shader | Tuned visually: red at 0.38 gain so it stays an accent; ribbons lowered by .3 from tablet up (.12 on phones, where that band holds the copy), so the light crosses the lower half level with the bottom of the name, centred right of it and fading towards the headline. |
 | 2 | `--ribbon-max-dpr`, `--ribbon-render-scale`, `--ribbon-max-fps` | hero shader | 1.5 / 0.75 / 30 — GPU budget. |
-| 3 | `--ribbon-overlay` stops | hero | Fade starts at 40% height, 70% canvas at 76%; left darkening to 60% width. |
+| 3 | `--ribbon-overlay` stops (`--ribbon-overlay-from` / `-mid`) | hero | Fade starts at 62% height, 70% canvas at 86% (48% / 78% on phones); left darkening to 60% width. |
 | 4 | `--ribbon-fallback` | hero without WebGL | Three radial gradients echoing the ribbons. |
 | 5 | `--layout-measure` | long text | 70ch — midpoint of the brand's 65–75 range. |
 | 6 | Motion distances (#9) | intro, glyphs, reveals, hover | Reuse Utopia space steps instead of new numbers. |
@@ -206,6 +220,7 @@ it can be changed in one place.
 | 13 | `--band-blend` | band backgrounds | Twice the band padding, so the colour change never shows an edge. |
 | 14 | `--contact-ribbon-*` | contact ribbons | Offset −.46 and focus (.5, .22) put the light behind and around the cards; the overlay fades in from the band above, shades the statement and fades out just above the footer. |
 | 15 | `--layout-footer-height` | footer, closing screen | Same as the header (64 / 72 / 80px). The contact section fills the space between header and footer and keeps its statement in the middle (equal rows above and below, the actions hanging in the lower one), so the page ends on a centred statement; below desktop the footer keeps name and year so it stays one row. |
+| 16 | `--intro-*` | opening | A ≈ 3.1 s cinematic opening on the hero's own ribbons in place of the 2 s fade, which read as too plain; slit and band sit where the ribbons are brightest. |
 
 Literal values that remain on purpose: the `theme-color` meta and the favicon
 use brand hex codes (they cannot read CSS variables); image `sizes`

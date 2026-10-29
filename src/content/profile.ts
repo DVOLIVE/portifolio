@@ -4,6 +4,8 @@
  */
 export const intro = {
   line: 'turning data into impact.',
+  /** Decodes under the band of light; the site title's three themes. */
+  label: 'Data · Engineering · AI',
 };
 
 export const hero = {

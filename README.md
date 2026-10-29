@@ -133,7 +133,9 @@ document language. To add a language, mirror the content files per locale
 ## Accessibility and motion
 
 Semantic landmarks, a skip link, visible focus, keyboard-operable menu (Escape
-closes it), 48px targets, WCAG AA contrast. The education explorer is a set of
+closes it), 48px targets, WCAG AA contrast. On the first visit of a browser
+session the home page opens with a short sequence on the hero's own ribbons
+(`src/components/Intro.astro`); any key, click, touch or scroll fades it out. The education explorer is a set of
 vertical tabs: hover or click a course, or move with the arrow keys, Home and
 End (`src/scripts/explorer.ts`); without JavaScript every course panel is shown
 in turn and the list links to them. With `prefers-reduced-motion: reduce`

@@ -2,59 +2,229 @@
 import { intro } from '../content/profile';
 
 /*
- * Purely aesthetic curtain. It only plays when the inline script in
- * BaseLayout sets <html data-intro="play">: JavaScript available, no
- * reduced-motion preference, no #anchor in the URL and not already seen in
- * this browser session. The page underneath is fully rendered and reachable
- * the whole time (the curtain ignores pointer events and is aria-hidden).
+ * Opening, shown on the first visit of a browser session when the inline
+ * script in BaseLayout sets <html data-intro="play"> (JavaScript available, no
+ * reduced-motion preference, no #anchor in the URL). Two dark panels cover the
+ * hero. A line of light draws where they meet and opens into a band of the
+ * hero's own ribbons; the statement rises above it and a label decodes below.
+ * A vignette keeps the light deep in the slit. Then the panels part on the
+ * hero — briskly, then settling slowly — as its ribbons settle into the slit
+ * and its name assembles: the waves never stop, so there is no cut. Purely aesthetic: aria-hidden, it
+ * ignores the pointer, and any key, click or scroll lets it fade away.
+ * Timing: the --intro-* tokens (semantic.css §9).
  */
-const text = intro.line.replace(/\.$/, '');
+const words = intro.line.replace(/\.$/, '').split(' ');
 ---
 
 <div class="intro" aria-hidden="true">
-  <p class="intro__line">{text}<span class="intro__dot">.</span></p>
+  <div class="intro__shade"></div>
+  <div class="intro__panel intro__panel--top">
+    <p class="intro__line">
+      {
+        words.map((word, i) => (
+          <span class="intro__word">
+            <span style={`--w: ${i}`}>{word}{i === words.length - 1 && <span class="intro__dot">.</span>}</span>
+          </span>
+        ))
+      }
+    </p>
+  </div>
+  <div class="intro__panel intro__panel--bottom">
+    <p class="intro__label mono-label" data-intro-decode>{intro.label}</p>
+  </div>
 </div>
+
+<script>
+  // The label resolves from data-like noise into its words as it fades in.
+  const label = document.querySelector<HTMLElement>('[data-intro-decode]');
+  if (label && document.documentElement.dataset.intro === 'play') {
+    const text = label.textContent ?? '';
+    const noise = '01<>/{}[]#*+=_:';
+    const draw = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--intro-draw')) || 600;
+    label.addEventListener(
+      'animationstart',
+      () => {
+        const start = performance.now();
+        let last = 0;
+        const step = (now: number) => {
+          const done = Math.min((now - start) / draw, 1);
+          if (now - last > 45 || done === 1) {
+            last = now;
+            const settled = Math.floor(done * text.length);
+            label.textContent = [...text]
+              .map((char, i) =>
+                i < settled || char === ' ' ? char : noise[Math.floor(Math.random() * noise.length)],
+              )
+              .join('');
+          }
+          if (done < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      },
+      { once: true },
+    );
+  }
+</script>
 
 <style>
   .intro { display: none; }
 
-  @media (--motion-ok) {
-    :global(:root[data-intro='play']) .intro {
-      position: fixed;
-      inset: 0;
-      z-index: var(--z-intro);
-      display: grid;
-      place-items: center;
-      padding-inline: var(--space-gutter);
-      background: var(--color-canvas);
-      pointer-events: none;
-      animation: intro-curtain var(--motion-enter) var(--motion-ease) var(--intro-curtain-at) forwards;
-    }
-
-    :global(:root[data-intro='play']) .intro__line {
-      animation:
-        intro-line-in var(--motion-enter) var(--motion-ease) both,
-        intro-line-out var(--motion-enter) var(--motion-ease) var(--intro-text-out-at) forwards;
-    }
+  /* Depth: the light sits in a dark vignette centred on the slit */
+  .intro__shade {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 75% 65% at 50% var(--intro-slit), transparent 15%, var(--intro-shade));
   }
 
+  /* Near-black panels; their edges feather into the band instead of cutting it */
+  .intro__panel {
+    position: absolute;
+    inset-inline: 0;
+    background: var(--intro-panel);
+    box-shadow: 0 0 var(--intro-feather) calc(var(--intro-feather) / 2) var(--intro-panel);
+  }
+  /* The panels meet at the height of the hero's light (1px overlap, no seam) */
+  .intro__panel--top {
+    top: 0;
+    height: var(--intro-slit);
+  }
+  .intro__panel--bottom {
+    top: calc(var(--intro-slit) - var(--border-width));
+    bottom: 0;
+  }
+  /* The line of light: one hairline on each panel edge, together at first;
+     it dissolves as the band opens, so the band has no edge lines */
+  .intro__panel--top::after,
+  .intro__panel--bottom::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    height: var(--border-width);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-accent) 30%,
+      var(--color-text) 50%,
+      var(--color-accent) 70%,
+      transparent
+    );
+    box-shadow: 0 0 var(--space-s) var(--intro-glow);
+    transform: scaleX(0);
+  }
+  .intro__panel--top::after { bottom: 0; }
+  .intro__panel--bottom::before { top: 0; }
+
   .intro__line {
+    position: absolute;
+    inset-inline: var(--space-gutter);
+    bottom: var(--space-xl);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    column-gap: .28em;
     font-family: var(--font-family-display);
-    font-size: var(--font-size-h2);
+    font-size: var(--font-size-h1);
     font-weight: var(--font-weight-medium);
+    line-height: var(--leading-tight);
     letter-spacing: var(--tracking-heading-role);
     color: var(--color-text);
     text-align: center;
   }
+  /* Each word rises from behind its own edge */
+  .intro__word {
+    display: inline-block;
+    overflow: hidden;
+    padding-block-end: .12em;
+    margin-block-end: -.12em;
+  }
+  .intro__word > span { display: inline-block; }
   .intro__dot { color: var(--color-accent); }
 
-  @keyframes intro-line-in {
-    from { opacity: 0; transform: translateY(var(--intro-lift)); }
+  .intro__label {
+    position: absolute;
+    inset-inline: var(--space-gutter);
+    top: var(--space-l);
+    color: var(--color-text-muted);
+    font-size: var(--intro-label-size);
+    text-align: center;
   }
-  @keyframes intro-line-out {
+
+  @media (--motion-ok) {
+    :global(:root:is([data-intro='play'], [data-intro='leave'])) .intro {
+      position: fixed;
+      inset: 0;
+      z-index: var(--z-intro);
+      display: block;
+      pointer-events: none;
+    }
+
+    :global(:root:is([data-intro='play'], [data-intro='leave'])) .intro__panel--top {
+      animation:
+        intro-band-top var(--intro-draw) var(--intro-ease) var(--intro-open-at) forwards,
+        intro-curtain-top var(--intro-reveal) var(--intro-reveal-ease) var(--intro-reveal-at) forwards;
+    }
+    :global(:root:is([data-intro='play'], [data-intro='leave'])) .intro__panel--bottom {
+      animation:
+        intro-band-bottom var(--intro-draw) var(--intro-ease) var(--intro-open-at) forwards,
+        intro-curtain-bottom var(--intro-reveal) var(--intro-reveal-ease) var(--intro-reveal-at) forwards;
+    }
+    :global(:root:is([data-intro='play'], [data-intro='leave'])) .intro__panel--top::after,
+    :global(:root:is([data-intro='play'], [data-intro='leave'])) .intro__panel--bottom::before {
+      animation:
+        intro-line var(--intro-draw) var(--motion-ease) var(--intro-line-at) forwards,
+        intro-fade-out var(--intro-draw) var(--intro-ease) var(--intro-open-at) forwards;
+    }
+    :global(:root:is([data-intro='play'], [data-intro='leave'])) .intro__word > span {
+      animation: intro-word var(--intro-draw) var(--motion-ease)
+        calc(var(--intro-words-at) + var(--w) * var(--intro-word-stagger)) both;
+    }
+    /* Statement, label and vignette dim as the panels part */
+    :global(:root:is([data-intro='play'], [data-intro='leave'])) .intro__line,
+    :global(:root:is([data-intro='play'], [data-intro='leave'])) .intro__shade {
+      animation: intro-fade-out var(--intro-reveal) var(--intro-reveal-ease) var(--intro-reveal-at) forwards;
+    }
+    :global(:root:is([data-intro='play'], [data-intro='leave'])) .intro__label {
+      animation:
+        intro-fade-in var(--intro-draw) var(--motion-ease) var(--intro-words-at) both,
+        intro-fade-out var(--intro-reveal) var(--intro-reveal-ease) var(--intro-reveal-at) forwards;
+    }
+
+    /* Skipped: everything holds where it is and the whole opening fades out */
+    :global(:root[data-intro='leave']) .intro {
+      animation: intro-leave var(--motion-base) var(--motion-ease) forwards;
+    }
+    :global(:root[data-intro='leave']) .intro *,
+    :global(:root[data-intro='leave']) .intro__panel::before,
+    :global(:root[data-intro='leave']) .intro__panel::after { animation-play-state: paused; }
+  }
+
+  @keyframes intro-line {
+    to { transform: scaleX(1); }
+  }
+  @keyframes intro-band-top {
+    to { transform: translateY(calc(var(--intro-band) / -2)); }
+  }
+  @keyframes intro-band-bottom {
+    to { transform: translateY(calc(var(--intro-band) / 2)); }
+  }
+  @keyframes intro-curtain-top {
+    from { transform: translateY(calc(var(--intro-band) / -2)); }
+    to { transform: translateY(-100%); }
+  }
+  @keyframes intro-curtain-bottom {
+    from { transform: translateY(calc(var(--intro-band) / 2)); }
+    to { transform: translateY(100%); }
+  }
+  @keyframes intro-word {
+    from { transform: translateY(110%); }
+  }
+  @keyframes intro-fade-in {
+    from { opacity: 0; }
+  }
+  @keyframes intro-fade-out {
     to { opacity: 0; }
   }
-  @keyframes intro-curtain {
+  @keyframes intro-leave {
     to { opacity: 0; visibility: hidden; }
   }
 </style>
